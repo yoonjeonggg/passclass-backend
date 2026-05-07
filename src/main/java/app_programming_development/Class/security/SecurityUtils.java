@@ -1,9 +1,9 @@
 package app_programming_development.Class.security;
 
-import app_programming_development.Class.entity.Users;
+import app_programming_development.Class.user.entity.Users;
 import app_programming_development.Class.exceptions.notFound.UserNotFoundException;
 import app_programming_development.Class.exceptions.unauthorized.NotAuthenticatedException;
-import app_programming_development.Class.repository.UserRepository;
+import app_programming_development.Class.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;

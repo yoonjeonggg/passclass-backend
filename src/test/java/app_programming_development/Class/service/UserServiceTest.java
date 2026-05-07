@@ -1,12 +1,13 @@
 package app_programming_development.Class.service;
 
-import app_programming_development.Class.dto.request.PatchMyProfileRequest;
-import app_programming_development.Class.dto.response.MyProfileResponse;
-import app_programming_development.Class.dto.response.ProfileResponse;
-import app_programming_development.Class.entity.Users;
+import app_programming_development.Class.dto.user.request.PatchMyProfileRequest;
+import app_programming_development.Class.dto.user.response.MyProfileResponse;
+import app_programming_development.Class.dto.user.response.ProfileResponse;
+import app_programming_development.Class.user.entity.Users;
 import app_programming_development.Class.enums.UserRole;
 import app_programming_development.Class.exceptions.notFound.UserNotFoundException;
-import app_programming_development.Class.repository.UserRepository;
+import app_programming_development.Class.user.repository.UserRepository;
+import app_programming_development.Class.user.service.UserService;
 import app_programming_development.Class.security.SecurityUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

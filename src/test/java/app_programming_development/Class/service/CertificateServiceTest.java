@@ -1,13 +1,14 @@
 package app_programming_development.Class.service;
 
-import app_programming_development.Class.dto.request.CertificateRequest;
-import app_programming_development.Class.dto.response.CertificateResponse;
-import app_programming_development.Class.entity.Certificates;
-import app_programming_development.Class.entity.Users;
+import app_programming_development.Class.dto.certificate.request.CertificateRequest;
+import app_programming_development.Class.dto.certificate.response.CertificateResponse;
+import app_programming_development.Class.certificate.entity.Certificates;
+import app_programming_development.Class.user.entity.Users;
 import app_programming_development.Class.enums.UserRole;
 import app_programming_development.Class.exceptions.forbidden.AdminRoleRequiredException;
 import app_programming_development.Class.exceptions.notFound.CertificateNotFoundException;
-import app_programming_development.Class.repository.CertificateRepository;
+import app_programming_development.Class.certificate.repository.CertificateRepository;
+import app_programming_development.Class.certificate.service.CertificateService;
 import app_programming_development.Class.security.SecurityUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

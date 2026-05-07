@@ -1,14 +1,15 @@
 package app_programming_development.Class.service;
 
-import app_programming_development.Class.dto.response.NotificationResponse;
-import app_programming_development.Class.dto.response.UnreadCountResponse;
-import app_programming_development.Class.entity.Notifications;
-import app_programming_development.Class.entity.Users;
+import app_programming_development.Class.dto.notification.response.NotificationResponse;
+import app_programming_development.Class.dto.notification.response.UnreadCountResponse;
+import app_programming_development.Class.notification.entity.Notifications;
+import app_programming_development.Class.user.entity.Users;
 import app_programming_development.Class.enums.NotificationType;
 import app_programming_development.Class.enums.UserRole;
 import app_programming_development.Class.exceptions.forbidden.NotNotificationOwnerException;
 import app_programming_development.Class.exceptions.notFound.NotificationNotFoundException;
-import app_programming_development.Class.repository.NotificationRepository;
+import app_programming_development.Class.notification.repository.NotificationRepository;
+import app_programming_development.Class.notification.service.NotificationService;
 import app_programming_development.Class.security.SecurityUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

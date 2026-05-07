@@ -1,14 +1,16 @@
 package app_programming_development.Class.service;
 
-import app_programming_development.Class.dto.response.LikeResponse;
-import app_programming_development.Class.entity.Certificates;
-import app_programming_development.Class.entity.LectureLikes;
-import app_programming_development.Class.entity.Lectures;
-import app_programming_development.Class.entity.Users;
+import app_programming_development.Class.dto.like.response.LikeResponse;
+import app_programming_development.Class.certificate.entity.Certificates;
+import app_programming_development.Class.like.entity.LectureLikes;
+import app_programming_development.Class.lecture.entity.Lectures;
+import app_programming_development.Class.user.entity.Users;
 import app_programming_development.Class.enums.UserRole;
 import app_programming_development.Class.exceptions.notFound.LectureNotFoundException;
-import app_programming_development.Class.repository.LectureLikeRepository;
-import app_programming_development.Class.repository.LectureRepository;
+import app_programming_development.Class.like.repository.LectureLikeRepository;
+import app_programming_development.Class.lecture.repository.LectureRepository;
+import app_programming_development.Class.like.service.LikeService;
+import app_programming_development.Class.notification.service.NotificationService;
 import app_programming_development.Class.security.SecurityUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

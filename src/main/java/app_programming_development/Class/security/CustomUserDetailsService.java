@@ -1,7 +1,7 @@
 package app_programming_development.Class.security;
 
-import app_programming_development.Class.entity.Users;
-import app_programming_development.Class.repository.UserRepository;
+import app_programming_development.Class.user.entity.Users;
+import app_programming_development.Class.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
