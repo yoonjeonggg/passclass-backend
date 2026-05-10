@@ -32,8 +32,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -114,14 +112,10 @@ public class LectureService {
         Long studentCount = enrollmentRepository.countByLectures_Id(lectureId);
 
         boolean isLiked = false;
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication != null && authentication.isAuthenticated()
-                && authentication.getPrincipal() instanceof org.springframework.security.core.userdetails.User) {
-            try {
-                Users currentUser = securityUtils.getCurrentUser();
-                isLiked = lectureLikeRepository.existsByUser_IdAndLectures_Id(currentUser.getId(), lectureId);
-            } catch (Exception ignored) {}
-        }
+        try {
+            Users currentUser = securityUtils.getCurrentUser();
+            isLiked = lectureLikeRepository.existsByUser_IdAndLectures_Id(currentUser.getId(), lectureId);
+        } catch (Exception ignored) {}
 
         List<ChapterDto> chapters = lectureChapterRepository.findByLectures_Id(lectureId)
                 .stream()
