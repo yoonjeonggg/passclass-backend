@@ -10,6 +10,8 @@ import app_programming_development.Class.file.entity.Files;
 import app_programming_development.Class.file.repository.FileRepository;
 import app_programming_development.Class.security.SecurityUtils;
 import app_programming_development.Class.user.entity.Users;
+import com.google.cloud.storage.Blob;
+import com.google.cloud.storage.Bucket;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -18,9 +20,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.util.List;
 import java.util.UUID;
 
@@ -31,12 +30,7 @@ public class FileService {
 
     private final FileRepository fileRepository;
     private final SecurityUtils securityUtils;
-
-    @Value("${file.upload.dir:uploads}")
-    private String uploadDir;
-
-    @Value("${file.base-url:http://localhost:8009}")
-    private String baseUrl;
+    private final Bucket bucket; // FirebaseConfig에서 빈으로 등록한 Bucket 주입
 
     private static final List<String> ALLOWED_EXTENSIONS = List.of(
             "jpg", "jpeg", "png", "gif", "mp4", "avi", "mkv", "pdf"
@@ -52,12 +46,12 @@ public class FileService {
         String extension = getExtension(originalName);
         String storedName = UUID.randomUUID() + "." + extension;
 
-        Path uploadPath = Paths.get(uploadDir);
-        java.nio.file.Files.createDirectories(uploadPath);
-        Path filePath = uploadPath.resolve(storedName);
-        java.nio.file.Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+        // Firebase Storage에 업로드
+        Blob blob = bucket.create(storedName, file.getInputStream(), file.getContentType());
 
-        String fileUrl = baseUrl + "/api/files/download/" + storedName;
+        // Firebase Storage의 공개 URL 생성
+        String fileUrl = String.format("https://firebasestorage.googleapis.com/v0/b/%s/o/%s?alt=media",
+                bucket.getName(), storedName);
 
         Files savedFile = fileRepository.save(Files.builder()
                 .uploader(uploader)
@@ -68,8 +62,8 @@ public class FileService {
                 .contentType(file.getContentType())
                 .build());
 
-        log.info("File uploaded: fileId={}, originalName={}, size={}bytes, uploaderId={}",
-                savedFile.getId(), originalName, file.getSize(), uploader.getId());
+        log.info("File uploaded to Firebase: fileId={}, originalName={}, uploaderId={}",
+                savedFile.getId(), originalName, uploader.getId());
         return FileResponse.from(savedFile);
     }
 
@@ -81,14 +75,18 @@ public class FileService {
     }
 
     @Transactional
-    public void deleteFile(Long fileId) throws IOException {
+    public void deleteFile(Long fileId) {
         Files file = fileRepository.findById(fileId)
                 .orElseThrow(UploadedFileNotFoundException::new);
 
-        Path filePath = Paths.get(uploadDir).resolve(file.getStoredName());
-        java.nio.file.Files.deleteIfExists(filePath);
+        // Firebase Storage에서 파일 삭제
+        Blob blob = bucket.get(file.getStoredName());
+        if (blob != null) {
+            blob.delete();
+        }
+
         fileRepository.delete(file);
-        log.info("File deleted: fileId={}, storedName={}", fileId, file.getStoredName());
+        log.info("File deleted from Firebase: fileId={}, storedName={}", fileId, file.getStoredName());
     }
 
     private void validateFile(MultipartFile file) {

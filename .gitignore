@@ -41,3 +41,6 @@ out/
 
 # application properties
 src/main/resources/application.properties
+
+# firebase key
+/src/main/resources/firebase/passclass-494fe-firebase-adminsdk-fbsvc-511a589c3b.json
