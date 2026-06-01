@@ -4,6 +4,7 @@ import app_programming_development.Class.dto.problem.request.ProblemCreateReques
 import app_programming_development.Class.dto.problem.request.ProblemSolveRequest;
 import app_programming_development.Class.dto.problem.request.ProblemUpdateRequest;
 import app_programming_development.Class.dto.problem.response.ProblemCreateResponse;
+import app_programming_development.Class.dto.problem.response.ProblemDetailResponse;
 import app_programming_development.Class.dto.problem.response.ProblemListResponse;
 import app_programming_development.Class.dto.problem.response.ProblemSolveResponse;
 import app_programming_development.Class.global.ApiResponse;
@@ -34,6 +35,12 @@ public class ProblemController {
     @Operation(summary = "문제 목록 조회")
     public ResponseEntity<ApiResponse<List<ProblemListResponse>>> getProblems(@RequestParam Long certificateId) {
         return ResponseEntity.ok(ApiResponse.ok(problemService.getProblems(certificateId), "조회되었습니다."));
+    }
+
+    @GetMapping("/{problemId}")
+    @Operation(summary = "문제 상세 조회 (정답·해설 포함, TEACHER/ADMIN 전용)")
+    public ResponseEntity<ApiResponse<ProblemDetailResponse>> getProblemDetail(@PathVariable Long problemId) {
+        return ResponseEntity.ok(ApiResponse.ok(problemService.getProblemDetail(problemId), "조회되었습니다."));
     }
 
     @PutMapping("/{problemId}")

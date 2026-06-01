@@ -15,6 +15,10 @@ public class ReviewResponse {
     private String nickname;
     private String profileUrl;
     private LocalDateTime createdAt;
+    private String reply;
+    private LocalDateTime replyAt;
+    private String instructorNickname;
+    private String instructorProfileUrl;
 
     public static ReviewResponse from(Reviews review) {
         return ReviewResponse.builder()
@@ -24,6 +28,10 @@ public class ReviewResponse {
                 .nickname(review.getUser().getNickname())
                 .profileUrl(review.getUser().getProfileUrl())
                 .createdAt(review.getCreatedAt())
+                .reply(review.getReply())
+                .replyAt(review.getReplyAt())
+                .instructorNickname(review.getLectures().getInstructor().getNickname())
+                .instructorProfileUrl(review.getLectures().getInstructor().getProfileUrl())
                 .build();
     }
 }

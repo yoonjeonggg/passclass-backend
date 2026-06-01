@@ -6,6 +6,7 @@ import app_programming_development.Class.dto.problem.request.ProblemCreateReques
 import app_programming_development.Class.dto.problem.request.ProblemSolveRequest;
 import app_programming_development.Class.dto.problem.request.ProblemUpdateRequest;
 import app_programming_development.Class.dto.problem.response.ProblemCreateResponse;
+import app_programming_development.Class.dto.problem.response.ProblemDetailResponse;
 import app_programming_development.Class.dto.problem.response.ProblemListResponse;
 import app_programming_development.Class.dto.problem.response.ProblemSolveResponse;
 import app_programming_development.Class.enums.UserRole;
@@ -71,6 +72,16 @@ public class ProblemService {
                 .stream()
                 .map(ProblemListResponse::from)
                 .toList();
+    }
+
+    public ProblemDetailResponse getProblemDetail(Long problemId) {
+        Users user = securityUtils.getCurrentUser();
+        if (user.getRole() == UserRole.USER) {
+            throw new TeacherRoleRequiredException();
+        }
+        Problems problem = problemRepository.findById(problemId)
+                .orElseThrow(ProblemNotFoundException::new);
+        return ProblemDetailResponse.from(problem);
     }
 
     @Transactional

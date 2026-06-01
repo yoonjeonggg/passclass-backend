@@ -14,6 +14,7 @@ import app_programming_development.Class.dto.lecture.response.LectureListDto;
 import app_programming_development.Class.enrollment.repository.EnrollmentRepository;
 import app_programming_development.Class.enums.SortType;
 import app_programming_development.Class.enums.UserRole;
+import app_programming_development.Class.exceptions.forbidden.AdminRoleRequiredException;
 import app_programming_development.Class.exceptions.forbidden.TeacherRoleRequiredException;
 import app_programming_development.Class.exceptions.notFound.CertificateNotFoundException;
 import app_programming_development.Class.exceptions.notFound.LectureNotFoundException;
@@ -78,29 +79,70 @@ public class LectureService {
     }
 
     public Page<LectureListDto> getLectures(int page, int size, String category, SortType sort) {
-        Sort sorting;
-        switch (sort) {
-            case POPULAR:
-                sorting = Sort.by(Sort.Direction.DESC, "likeCount");
-                break;
-            case OLDEST:
-                sorting = Sort.by(Sort.Direction.ASC, "createdAt");
-                break;
-            case LATEST:
-            default:
-                sorting = Sort.by(Sort.Direction.DESC, "createdAt");
-        }
-        Pageable pageable = PageRequest.of(page, size, sorting);
         Page<Lectures> lectures;
-        if (category != null && !category.isEmpty()) {
-            lectures = lectureRepository.findByCategory(category, pageable);
+        if (sort == SortType.ENROLLMENT) {
+            Pageable pageable = PageRequest.of(page, size);
+            if (category != null && !category.isEmpty()) {
+                lectures = lectureRepository.findByCategoryOrderByEnrollmentCountDesc(category, pageable);
+            } else {
+                lectures = lectureRepository.findAllOrderByEnrollmentCountDesc(pageable);
+            }
         } else {
-            lectures = lectureRepository.findAll(pageable);
+            Sort sorting;
+            switch (sort) {
+                case POPULAR:
+                    sorting = Sort.by(Sort.Direction.DESC, "likeCount");
+                    break;
+                case OLDEST:
+                    sorting = Sort.by(Sort.Direction.ASC, "createdAt");
+                    break;
+                case LATEST:
+                default:
+                    sorting = Sort.by(Sort.Direction.DESC, "createdAt");
+            }
+            Pageable pageable = PageRequest.of(page, size, sorting);
+            if (category != null && !category.isEmpty()) {
+                lectures = lectureRepository.findByCategory(category, pageable);
+            } else {
+                lectures = lectureRepository.findAll(pageable);
+            }
         }
         return lectures.map(lecture -> {
             Double avgRating = reviewRepository.getAverageRating(lecture.getId());
-            return LectureListDto.from(lecture, avgRating != null ? avgRating : 0.0);
+            Long enrollCount = enrollmentRepository.countByLectures_Id(lecture.getId());
+            Long likeCount = lectureLikeRepository.countByLectures_Id(lecture.getId());
+            return LectureListDto.from(lecture, avgRating != null ? avgRating : 0.0, enrollCount, likeCount);
         });
+    }
+
+    @Transactional
+    public void updateLecture(Long lectureId, LectureRequest request) {
+        Users admin = securityUtils.getCurrentUser();
+        if (!admin.getRole().equals(UserRole.ADMIN)) {
+            throw new AdminRoleRequiredException();
+        }
+        Lectures lecture = lectureRepository.findById(lectureId)
+                .orElseThrow(LectureNotFoundException::new);
+        Certificates certificate = certificateRepository.findById(request.getCertificateId())
+                .orElseThrow(CertificateNotFoundException::new);
+        lecture.setTitle(request.getTitle());
+        lecture.setDescription(request.getDescription());
+        lecture.setCategory(request.getCategory());
+        lecture.setThumbnailUrl(request.getThumbnailUrl());
+        lecture.setCertificates(certificate);
+        log.info("Lecture updated by admin: lectureId={}, adminId={}", lectureId, admin.getId());
+    }
+
+    @Transactional
+    public void deleteLecture(Long lectureId) {
+        Users admin = securityUtils.getCurrentUser();
+        if (!admin.getRole().equals(UserRole.ADMIN)) {
+            throw new AdminRoleRequiredException();
+        }
+        Lectures lecture = lectureRepository.findById(lectureId)
+                .orElseThrow(LectureNotFoundException::new);
+        lectureRepository.delete(lecture);
+        log.info("Lecture deleted by admin: lectureId={}, adminId={}", lectureId, admin.getId());
     }
 
     public LectureDetailResponse getLecture(Long lectureId) {
@@ -165,7 +207,9 @@ public class LectureService {
         List<LectureListDto> lectureDtos = lectures.stream()
                 .map(l -> {
                     Double avgRating = reviewRepository.getAverageRating(l.getId());
-                    return LectureListDto.from(l, avgRating != null ? avgRating : 0.0);
+                    Long enrollCount = enrollmentRepository.countByLectures_Id(l.getId());
+                    Long likeCount = lectureLikeRepository.countByLectures_Id(l.getId());
+                    return LectureListDto.from(l, avgRating != null ? avgRating : 0.0, enrollCount, likeCount);
                 })
                 .collect(Collectors.toList());
 

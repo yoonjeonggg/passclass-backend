@@ -61,4 +61,28 @@ public class LectureController {
         InstructorProfileResponse result = lectureService.getInstructorProfile(instructorId);
         return ResponseEntity.ok(ApiResponse.ok(result, "조회되었습니다."));
     }
+
+    @PutMapping("/{lectureId}")
+    @Operation(summary = "강의 수정 (관리자)", description = "관리자가 강의를 수정합니다.")
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "요청 성공"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "관리자만 가능한 권한입니다.", content = @Content),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "강의를 찾을 수 없습니다.", content = @Content)
+    })
+    public ResponseEntity<ApiResponse<Void>> updateLecture(@PathVariable Long lectureId, @RequestBody LectureRequest request) {
+        lectureService.updateLecture(lectureId, request);
+        return ResponseEntity.ok(ApiResponse.ok("수정되었습니다."));
+    }
+
+    @DeleteMapping("/{lectureId}")
+    @Operation(summary = "강의 삭제 (관리자)", description = "관리자가 강의를 삭제합니다.")
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "요청 성공"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "관리자만 가능한 권한입니다.", content = @Content),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "강의를 찾을 수 없습니다.", content = @Content)
+    })
+    public ResponseEntity<ApiResponse<Void>> deleteLecture(@PathVariable Long lectureId) {
+        lectureService.deleteLecture(lectureId);
+        return ResponseEntity.ok(ApiResponse.ok("삭제되었습니다."));
+    }
 }

@@ -38,6 +38,12 @@ public class Reviews {
     @Column(name="content", columnDefinition = "TEXT")
     private String content;
 
+    @Column(name="reply", columnDefinition = "TEXT")
+    private String reply;
+
+    @Column(name="reply_at")
+    private LocalDateTime replyAt;
+
     @CreatedDate
     @Column(name="created_at", nullable = false)
     private LocalDateTime createdAt;

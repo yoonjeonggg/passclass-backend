@@ -7,6 +7,7 @@ import app_programming_development.Class.enrollment.repository.EnrollmentReposit
 import app_programming_development.Class.exceptions.conflict.DuplicateReviewException;
 import app_programming_development.Class.exceptions.forbidden.NotEnrolledException;
 import app_programming_development.Class.exceptions.forbidden.NotReviewOwnerException;
+import app_programming_development.Class.exceptions.forbidden.TeacherRoleRequiredException;
 import app_programming_development.Class.exceptions.notFound.LectureNotFoundException;
 import app_programming_development.Class.exceptions.notFound.ReviewNotFoundException;
 import app_programming_development.Class.lecture.entity.Lectures;
@@ -20,6 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 
@@ -84,6 +86,22 @@ public class ReviewService {
                 .averageRating(avgRating != null ? avgRating : 0.0)
                 .reviewCount(count)
                 .build();
+    }
+
+    @Transactional
+    public void replyToReview(Long reviewId, String reply) {
+        Users currentUser = securityUtils.getCurrentUser();
+        Reviews review = reviewRepository.findById(reviewId)
+                .orElseThrow(ReviewNotFoundException::new);
+
+        Long instructorId = review.getLectures().getInstructor().getId();
+        if (!Objects.equals(instructorId, currentUser.getId())) {
+            throw new TeacherRoleRequiredException();
+        }
+
+        review.setReply(reply);
+        review.setReplyAt(LocalDateTime.now());
+        log.info("Review replied by instructor: reviewId={}, instructorId={}", reviewId, currentUser.getId());
     }
 
     @Transactional(readOnly = true)

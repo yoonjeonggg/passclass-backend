@@ -1,5 +1,6 @@
 package app_programming_development.Class.review.controller;
 
+import app_programming_development.Class.dto.review.request.ReviewReplyRequest;
 import app_programming_development.Class.dto.review.request.ReviewRequest;
 import app_programming_development.Class.dto.review.response.ReviewResponse;
 import app_programming_development.Class.dto.review.response.ReviewSummaryResponse;
@@ -70,5 +71,18 @@ public class ReviewController {
     public ResponseEntity<ApiResponse<List<ReviewResponse>>> getReviews(@RequestParam Long lectureId) {
         List<ReviewResponse> result = reviewService.getReviews(lectureId);
         return ResponseEntity.ok(ApiResponse.ok(result, "조회되었습니다."));
+    }
+
+    @PostMapping("/{reviewId}/reply")
+    @Operation(summary = "리뷰 답글 등록", description = "강사가 수강생 리뷰에 답글을 등록합니다.")
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "요청 성공"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "로그인이 필요합니다.", content = @Content),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "해당 강의의 강사만 답글을 작성할 수 있습니다.", content = @Content),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "해당 리뷰를 찾을 수 없습니다.", content = @Content)
+    })
+    public ResponseEntity<ApiResponse<Void>> replyToReview(@PathVariable Long reviewId, @RequestBody ReviewReplyRequest request) {
+        reviewService.replyToReview(reviewId, request.getReply());
+        return ResponseEntity.ok(ApiResponse.ok("답글이 등록되었습니다."));
     }
 }
