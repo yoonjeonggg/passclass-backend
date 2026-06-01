@@ -21,10 +21,6 @@ jobs:
           java-version: '21'
           distribution: 'corretto'
 
-      - name: Inject Firebase config
-        run: |
-          mkdir -p src/main/resources/firebase
-          printf '%s' "${{ secrets.FIREBASE_CONFIG_JSON }}" | base64 -d > src/main/resources/firebase/passclass-494fe-firebase-adminsdk-fbsvc-511a589c3b.json
 
       - name: Build with Gradle (skip tests)
         run: bash gradlew bootJar -x test
@@ -58,6 +54,7 @@ jobs:
             -e SPRING_PROFILES_ACTIVE=prod \
             -e "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" \
             -e "JWT_SECRET=${{ secrets.JWT_SECRET }}" \
+            -v /home/${{ secrets.EC2_USERNAME }}/passclass/firebase.json:/app/BOOT-INF/classes/firebase/passclass-494fe-firebase-adminsdk-fbsvc-511a589c3b.json:ro \
             ghcr.io/${{ github.repository_owner }}/passclass:latest
 
           echo "Deployed successfully"
