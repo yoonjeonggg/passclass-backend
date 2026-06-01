@@ -6,20 +6,14 @@ on:
 
 jobs:
   build-and-deploy:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
+    permissions:
+      contents: read
+      packages: write
 
     steps:
       - name: Checkout source
         uses: actions/checkout@v4
-
-      - name: Set up JDK 21
-        uses: actions/setup-java@v4
-        with:
-          java-version: '21'
-          distribution: 'temurin'
-
-      - name: Grant execute permission to gradlew
-        run: chmod +x gradlew
 
       - name: Inject Firebase config
         run: |
@@ -43,27 +37,18 @@ jobs:
           push: true
           tags: ghcr.io/${{ github.repository_owner }}/passclass:latest
 
-      - name: Deploy on EC2
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USERNAME }}
-          password: ${{ secrets.EC2_PASSWORD }}
-          script: |
-            echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+      - name: Deploy Docker container
+        run: |
+          docker stop passclass || true
+          docker rm passclass || true
 
-            docker pull ghcr.io/${{ github.repository_owner }}/passclass:latest
+          docker run -d \
+            --name passclass \
+            --restart unless-stopped \
+            --network host \
+            -e SPRING_PROFILES_ACTIVE=prod \
+            -e DB_PASSWORD=${{ secrets.DB_PASSWORD }} \
+            -e JWT_SECRET=${{ secrets.JWT_SECRET }} \
+            ghcr.io/${{ github.repository_owner }}/passclass:latest
 
-            docker stop passclass || true
-            docker rm passclass || true
-
-            docker run -d \
-              --name passclass \
-              --restart unless-stopped \
-              -p 8009:8009 \
-              -e SPRING_PROFILES_ACTIVE=prod \
-              -e DB_PASSWORD=${{ secrets.DB_PASSWORD }} \
-              -e JWT_SECRET=${{ secrets.JWT_SECRET }} \
-              ghcr.io/${{ github.repository_owner }}/passclass:latest
-
-            echo "Deployed successfully"
+          echo "Deployed successfully"
