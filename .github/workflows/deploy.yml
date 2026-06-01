@@ -24,7 +24,7 @@ jobs:
       - name: Inject Firebase config
         run: |
           mkdir -p src/main/resources/firebase
-          echo "${{ secrets.FIREBASE_CONFIG_JSON }}" | base64 -d > src/main/resources/firebase/passclass-494fe-firebase-adminsdk-fbsvc-511a589c3b.json
+          printf '%s' "${{ secrets.FIREBASE_CONFIG_JSON }}" | base64 -d > src/main/resources/firebase/passclass-494fe-firebase-adminsdk-fbsvc-511a589c3b.json
 
       - name: Build with Gradle (skip tests)
         run: bash gradlew bootJar -x test
