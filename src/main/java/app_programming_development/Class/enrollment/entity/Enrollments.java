@@ -56,7 +56,7 @@ public class Enrollments {
 
     public void updateProgress(int completedChapters, int totalChapters) {
         if (totalChapters == 0) return;
-        this.progressRate = (completedChapters * 100) / totalChapters;
-        this.isCompleted = (this.progressRate == 100);
+        this.progressRate = (int) Math.round((double) completedChapters / totalChapters * 100);
+        this.isCompleted = completedChapters >= totalChapters;
     }
 }

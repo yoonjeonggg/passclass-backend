@@ -15,5 +15,7 @@ public interface ReviewRepository extends JpaRepository<Reviews, Long> {
     Long countByLectures_Id(Long lectureId);
     boolean existsByUser_IdAndLectures_Id(Long userId, Long lectureId);
     List<Reviews> findByLectures_IdOrderByCreatedAtDesc(Long lectureId);
+    List<Reviews> findByLectures_IdOrderByRatingDescCreatedAtDesc(Long lectureId);
+    List<Reviews> findByLectures_IdOrderByRatingAscCreatedAtDesc(Long lectureId);
     Optional<Reviews> findByUser_IdAndLectures_Id(Long userId, Long lectureId);
 }

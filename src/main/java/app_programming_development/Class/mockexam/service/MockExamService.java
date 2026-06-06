@@ -57,7 +57,7 @@ public class MockExamService {
                 .certificates(certificate)
                 .creator(user)
                 .title(request.getTitle())
-                .timeLimit(0)
+                .timeLimit(request.getTimeLimit())
                 .build();
 
         mockExamRepository.save(exam);
@@ -71,7 +71,8 @@ public class MockExamService {
         Users currentUser = null;
         try {
             currentUser = securityUtils.getCurrentUser();
-        } catch (Exception ignored) {
+        } catch (app_programming_development.Class.exceptions.unauthorized.NotAuthenticatedException |
+                 app_programming_development.Class.exceptions.notFound.UserNotFoundException ignored) {
             // 비로그인 사용자는 완료 여부 없이 반환
         }
 

@@ -10,4 +10,5 @@ import lombok.NoArgsConstructor;
 public class MockExamCreateRequest {
     private Long certificateId;
     private String title;
+    private int timeLimit;
 }

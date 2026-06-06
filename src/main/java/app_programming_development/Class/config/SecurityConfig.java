@@ -89,6 +89,7 @@ public class SecurityConfig {
                                 "/api/problems",
                                 "/api/mock-exams"
                         ).permitAll()
+                        .requestMatchers("/api/auth/email/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .authenticationManager(authenticationManager)

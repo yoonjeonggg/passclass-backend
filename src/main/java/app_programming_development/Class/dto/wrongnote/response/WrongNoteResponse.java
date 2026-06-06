@@ -1,6 +1,7 @@
 package app_programming_development.Class.dto.wrongnote.response;
 
 import app_programming_development.Class.problem.entity.WrongNotes;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -18,6 +19,8 @@ public class WrongNoteResponse {
     private int correctAnswer;
     private String explanation;
     private String memo;
+    @JsonProperty("isFavorite")
+    private boolean isFavorite;
 
     public static WrongNoteResponse from(WrongNotes note) {
         return WrongNoteResponse.builder()
@@ -32,6 +35,7 @@ public class WrongNoteResponse {
                 .correctAnswer(note.getProblems().getCorrectAnswer())
                 .explanation(note.getProblems().getExplanation())
                 .memo(note.getMemo())
+                .isFavorite(note.isFavorite())
                 .build();
     }
 }

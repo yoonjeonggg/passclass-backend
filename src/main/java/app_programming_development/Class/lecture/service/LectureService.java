@@ -3,6 +3,7 @@ package app_programming_development.Class.lecture.service;
 import app_programming_development.Class.certificate.entity.Certificates;
 import app_programming_development.Class.certificate.repository.CertificateRepository;
 import app_programming_development.Class.chapter.repository.LectureChapterRepository;
+import app_programming_development.Class.config.CacheConfig;
 import app_programming_development.Class.dto.certificate.response.CertificateInfo;
 import app_programming_development.Class.dto.chapter.response.ChapterDto;
 import app_programming_development.Class.dto.lecture.request.LectureRequest;
@@ -11,17 +12,22 @@ import app_programming_development.Class.dto.lecture.response.InstructorProfileR
 import app_programming_development.Class.dto.lecture.response.LectureCreateResponse;
 import app_programming_development.Class.dto.lecture.response.LectureDetailResponse;
 import app_programming_development.Class.dto.lecture.response.LectureListDto;
+import app_programming_development.Class.enrollment.entity.Enrollments;
 import app_programming_development.Class.enrollment.repository.EnrollmentRepository;
+import app_programming_development.Class.enums.NotificationType;
 import app_programming_development.Class.enums.SortType;
 import app_programming_development.Class.enums.UserRole;
 import app_programming_development.Class.exceptions.forbidden.AdminRoleRequiredException;
+import app_programming_development.Class.exceptions.forbidden.NotLectureOwnerException;
 import app_programming_development.Class.exceptions.forbidden.TeacherRoleRequiredException;
 import app_programming_development.Class.exceptions.notFound.CertificateNotFoundException;
 import app_programming_development.Class.exceptions.notFound.LectureNotFoundException;
 import app_programming_development.Class.exceptions.notFound.UserNotFoundException;
+import app_programming_development.Class.exceptions.unauthorized.NotAuthenticatedException;
 import app_programming_development.Class.lecture.entity.Lectures;
 import app_programming_development.Class.lecture.repository.LectureRepository;
 import app_programming_development.Class.like.repository.LectureLikeRepository;
+import app_programming_development.Class.notification.service.NotificationService;
 import app_programming_development.Class.review.repository.ReviewRepository;
 import app_programming_development.Class.security.SecurityUtils;
 import app_programming_development.Class.user.entity.Users;
@@ -29,6 +35,9 @@ import app_programming_development.Class.user.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -51,8 +60,12 @@ public class LectureService {
     private final EnrollmentRepository enrollmentRepository;
     private final LectureChapterRepository lectureChapterRepository;
     private final CertificateRepository certificateRepository;
+    private final NotificationService notificationService;
 
     @Transactional
+    @Caching(evict = {
+            @CacheEvict(value = CacheConfig.LECTURES, allEntries = true)
+    })
     public LectureCreateResponse createLecture(LectureRequest request) {
         Users instructor = securityUtils.getCurrentUser();
         if (!instructor.getRole().equals(UserRole.TEACHER)) {
@@ -78,9 +91,20 @@ public class LectureService {
         return LectureCreateResponse.from(lecture);
     }
 
-    public Page<LectureListDto> getLectures(int page, int size, String category, SortType sort) {
+    @Cacheable(value = CacheConfig.LECTURES, key = "#keyword + '_' + #category + '_' + #sort + '_' + #page + '_' + #size")
+    public Page<LectureListDto> getLectures(int page, int size, String category, SortType sort, String keyword) {
         Page<Lectures> lectures;
-        if (sort == SortType.ENROLLMENT) {
+        boolean hasKeyword = keyword != null && !keyword.isBlank();
+
+        if (hasKeyword) {
+            Sort sorting = Sort.by(Sort.Direction.DESC, "createdAt");
+            Pageable pageable = PageRequest.of(page, size, sorting);
+            if (category != null && !category.isEmpty()) {
+                lectures = lectureRepository.searchByKeywordAndCategory(keyword, category, pageable);
+            } else {
+                lectures = lectureRepository.searchByKeyword(keyword, pageable);
+            }
+        } else if (sort == SortType.ENROLLMENT) {
             Pageable pageable = PageRequest.of(page, size);
             if (category != null && !category.isEmpty()) {
                 lectures = lectureRepository.findByCategoryOrderByEnrollmentCountDesc(category, pageable);
@@ -116,13 +140,22 @@ public class LectureService {
     }
 
     @Transactional
+    @Caching(evict = {
+            @CacheEvict(value = CacheConfig.LECTURES, allEntries = true),
+            @CacheEvict(value = CacheConfig.LECTURE_DETAIL, key = "#lectureId")
+    })
     public void updateLecture(Long lectureId, LectureRequest request) {
-        Users admin = securityUtils.getCurrentUser();
-        if (!admin.getRole().equals(UserRole.ADMIN)) {
-            throw new AdminRoleRequiredException();
-        }
+        Users currentUser = securityUtils.getCurrentUser();
         Lectures lecture = lectureRepository.findById(lectureId)
                 .orElseThrow(LectureNotFoundException::new);
+
+        boolean isAdmin = currentUser.getRole().equals(UserRole.ADMIN);
+        boolean isOwner = currentUser.getRole().equals(UserRole.TEACHER)
+                && lecture.getInstructor().getId().equals(currentUser.getId());
+        if (!isAdmin && !isOwner) {
+            throw new NotLectureOwnerException();
+        }
+
         Certificates certificate = certificateRepository.findById(request.getCertificateId())
                 .orElseThrow(CertificateNotFoundException::new);
         lecture.setTitle(request.getTitle());
@@ -130,19 +163,37 @@ public class LectureService {
         lecture.setCategory(request.getCategory());
         lecture.setThumbnailUrl(request.getThumbnailUrl());
         lecture.setCertificates(certificate);
-        log.info("Lecture updated by admin: lectureId={}, adminId={}", lectureId, admin.getId());
+
+        List<Enrollments> enrollments = enrollmentRepository.findByLectures_Id(lectureId);
+        for (Enrollments enrollment : enrollments) {
+            notificationService.createNotification(
+                    enrollment.getUser(),
+                    NotificationType.LECTURE_UPDATED,
+                    lecture.getTitle() + " 강의가 업데이트되었습니다."
+            );
+        }
+        log.info("Lecture updated: lectureId={}, updatedBy={}", lectureId, currentUser.getId());
     }
 
     @Transactional
+    @Caching(evict = {
+            @CacheEvict(value = CacheConfig.LECTURES, allEntries = true),
+            @CacheEvict(value = CacheConfig.LECTURE_DETAIL, key = "#lectureId")
+    })
     public void deleteLecture(Long lectureId) {
-        Users admin = securityUtils.getCurrentUser();
-        if (!admin.getRole().equals(UserRole.ADMIN)) {
-            throw new AdminRoleRequiredException();
-        }
+        Users currentUser = securityUtils.getCurrentUser();
         Lectures lecture = lectureRepository.findById(lectureId)
                 .orElseThrow(LectureNotFoundException::new);
+
+        boolean isAdmin = currentUser.getRole().equals(UserRole.ADMIN);
+        boolean isOwner = currentUser.getRole().equals(UserRole.TEACHER)
+                && lecture.getInstructor().getId().equals(currentUser.getId());
+        if (!isAdmin && !isOwner) {
+            throw new NotLectureOwnerException();
+        }
+
         lectureRepository.delete(lecture);
-        log.info("Lecture deleted by admin: lectureId={}, adminId={}", lectureId, admin.getId());
+        log.info("Lecture deleted: lectureId={}, deletedBy={}", lectureId, currentUser.getId());
     }
 
     public LectureDetailResponse getLecture(Long lectureId) {
@@ -157,7 +208,7 @@ public class LectureService {
         try {
             Users currentUser = securityUtils.getCurrentUser();
             isLiked = lectureLikeRepository.existsByUser_IdAndLectures_Id(currentUser.getId(), lectureId);
-        } catch (Exception ignored) {}
+        } catch (NotAuthenticatedException | UserNotFoundException ignored) {}
 
         List<ChapterDto> chapters = lectureChapterRepository.findByLectures_Id(lectureId)
                 .stream()

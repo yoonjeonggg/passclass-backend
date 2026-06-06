@@ -18,4 +18,10 @@ public interface LectureRepository extends JpaRepository<Lectures, Long> {
 
     @Query("SELECT l FROM Lectures l WHERE l.category = :category ORDER BY (SELECT COUNT(e) FROM Enrollments e WHERE e.lectures.id = l.id) DESC")
     Page<Lectures> findByCategoryOrderByEnrollmentCountDesc(@Param("category") String category, Pageable pageable);
+
+    @Query("SELECT l FROM Lectures l WHERE (l.title LIKE %:keyword% OR l.instructor.nickname LIKE %:keyword%)")
+    Page<Lectures> searchByKeyword(@Param("keyword") String keyword, Pageable pageable);
+
+    @Query("SELECT l FROM Lectures l WHERE l.category = :category AND (l.title LIKE %:keyword% OR l.instructor.nickname LIKE %:keyword%)")
+    Page<Lectures> searchByKeywordAndCategory(@Param("keyword") String keyword, @Param("category") String category, Pageable pageable);
 }

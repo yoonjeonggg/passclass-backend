@@ -37,6 +37,10 @@ public class WrongNotes {
     @Column(name="memo", columnDefinition = "TEXT")
     private String memo;
 
+    @Builder.Default
+    @Column(name="is_favorite", nullable = false)
+    private boolean isFavorite = false;
+
     @CreatedDate
     @Column(name="created_at", nullable = false)
     private LocalDateTime createdAt;

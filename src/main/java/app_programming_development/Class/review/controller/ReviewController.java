@@ -4,6 +4,7 @@ import app_programming_development.Class.dto.review.request.ReviewReplyRequest;
 import app_programming_development.Class.dto.review.request.ReviewRequest;
 import app_programming_development.Class.dto.review.response.ReviewResponse;
 import app_programming_development.Class.dto.review.response.ReviewSummaryResponse;
+import app_programming_development.Class.enums.ReviewSortType;
 import app_programming_development.Class.global.ApiResponse;
 import app_programming_development.Class.review.service.ReviewService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -63,14 +64,28 @@ public class ReviewController {
     }
 
     @GetMapping
-    @Operation(summary = "리뷰 목록 조회", description = "강의의 리뷰 목록을 조회하는 API 입니다.")
+    @Operation(summary = "리뷰 목록 조회", description = "sort: LATEST(최신순), RATING_HIGH(평점높은순), RATING_LOW(평점낮은순)")
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "요청 성공"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "해당 강의를 찾을 수 없습니다.", content = @Content)
     })
-    public ResponseEntity<ApiResponse<List<ReviewResponse>>> getReviews(@RequestParam Long lectureId) {
-        List<ReviewResponse> result = reviewService.getReviews(lectureId);
+    public ResponseEntity<ApiResponse<List<ReviewResponse>>> getReviews(
+            @RequestParam Long lectureId,
+            @RequestParam(defaultValue = "LATEST") ReviewSortType sort) {
+        List<ReviewResponse> result = reviewService.getReviews(lectureId, sort);
         return ResponseEntity.ok(ApiResponse.ok(result, "조회되었습니다."));
+    }
+
+    @DeleteMapping("/{reviewId}")
+    @Operation(summary = "리뷰 삭제", description = "작성자만 삭제 가능합니다.")
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "요청 성공"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "본인의 리뷰만 삭제할 수 있습니다.", content = @Content),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "해당 리뷰를 찾을 수 없습니다.", content = @Content)
+    })
+    public ResponseEntity<ApiResponse<Void>> deleteReview(@PathVariable Long reviewId) {
+        reviewService.deleteReview(reviewId);
+        return ResponseEntity.ok(ApiResponse.ok("리뷰가 삭제되었습니다."));
     }
 
     @PostMapping("/{reviewId}/reply")

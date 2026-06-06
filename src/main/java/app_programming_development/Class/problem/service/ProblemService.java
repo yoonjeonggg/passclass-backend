@@ -2,6 +2,7 @@ package app_programming_development.Class.problem.service;
 
 import app_programming_development.Class.certificate.entity.Certificates;
 import app_programming_development.Class.certificate.repository.CertificateRepository;
+import app_programming_development.Class.config.CacheConfig;
 import app_programming_development.Class.dto.problem.request.ProblemCreateRequest;
 import app_programming_development.Class.dto.problem.request.ProblemSolveRequest;
 import app_programming_development.Class.dto.problem.request.ProblemUpdateRequest;
@@ -22,6 +23,8 @@ import app_programming_development.Class.security.SecurityUtils;
 import app_programming_development.Class.user.entity.Users;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,6 +43,7 @@ public class ProblemService {
     private final SecurityUtils securityUtils;
 
     @Transactional
+    @CacheEvict(value = CacheConfig.PROBLEMS, key = "#request.certificateId")
     public ProblemCreateResponse createProblem(ProblemCreateRequest request) {
         Users user = securityUtils.getCurrentUser();
         if (user.getRole() == UserRole.USER) {
@@ -67,6 +71,7 @@ public class ProblemService {
         return ProblemCreateResponse.from(problem);
     }
 
+    @Cacheable(value = CacheConfig.PROBLEMS, key = "#certificateId")
     public List<ProblemListResponse> getProblems(Long certificateId) {
         return problemRepository.findByCertificates_IdOrderByCreatedAtDesc(certificateId)
                 .stream()
@@ -85,6 +90,7 @@ public class ProblemService {
     }
 
     @Transactional
+    @CacheEvict(value = CacheConfig.PROBLEMS, allEntries = true)
     public ProblemCreateResponse updateProblem(Long problemId, ProblemUpdateRequest request) {
         Users user = securityUtils.getCurrentUser();
         if (user.getRole() == UserRole.USER) {
@@ -107,6 +113,7 @@ public class ProblemService {
     }
 
     @Transactional
+    @CacheEvict(value = CacheConfig.PROBLEMS, allEntries = true)
     public void deleteProblem(Long problemId) {
         Users user = securityUtils.getCurrentUser();
         if (user.getRole() == UserRole.USER) {

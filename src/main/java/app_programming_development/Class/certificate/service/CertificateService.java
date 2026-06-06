@@ -2,6 +2,7 @@ package app_programming_development.Class.certificate.service;
 
 import app_programming_development.Class.certificate.entity.Certificates;
 import app_programming_development.Class.certificate.repository.CertificateRepository;
+import app_programming_development.Class.config.CacheConfig;
 import app_programming_development.Class.dto.certificate.request.CertificateRequest;
 import app_programming_development.Class.dto.certificate.response.CertificateResponse;
 import app_programming_development.Class.enums.UserRole;
@@ -11,6 +12,8 @@ import app_programming_development.Class.security.SecurityUtils;
 import app_programming_development.Class.user.entity.Users;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,6 +29,7 @@ public class CertificateService {
     private final SecurityUtils securityUtils;
 
     @Transactional
+    @CacheEvict(value = CacheConfig.CERTIFICATES, allEntries = true)
     public CertificateResponse createCertificate(CertificateRequest request) {
         Users currentUser = securityUtils.getCurrentUser();
 
@@ -46,6 +50,7 @@ public class CertificateService {
     }
 
     @Transactional(readOnly = true)
+    @Cacheable(value = CacheConfig.CERTIFICATES, key = "'all'")
     public List<CertificateResponse> getCertificates() {
         return certificateRepository.findAll()
                 .stream()
@@ -62,6 +67,7 @@ public class CertificateService {
     }
 
     @Transactional
+    @CacheEvict(value = CacheConfig.CERTIFICATES, allEntries = true)
     public CertificateResponse updateCertificate(Long id, CertificateRequest request) {
         Users currentUser = securityUtils.getCurrentUser();
 
@@ -80,6 +86,7 @@ public class CertificateService {
     }
 
     @Transactional
+    @CacheEvict(value = CacheConfig.CERTIFICATES, allEntries = true)
     public void deleteCertificate(Long id) {
         Users currentUser = securityUtils.getCurrentUser();
 

@@ -67,4 +67,13 @@ public class EnrollmentService {
                 .map(EnrollmentResponse::from)
                 .toList();
     }
+
+    @Transactional(readOnly = true)
+    public List<EnrollmentResponse> getMyCompletedEnrollments() {
+        Users currentUser = securityUtils.getCurrentUser();
+        return enrollmentRepository.findByUserIdAndIsCompleted(currentUser.getId(), true)
+                .stream()
+                .map(EnrollmentResponse::from)
+                .toList();
+    }
 }

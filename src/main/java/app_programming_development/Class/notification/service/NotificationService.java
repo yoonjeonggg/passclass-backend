@@ -55,6 +55,13 @@ public class NotificationService {
     }
 
     @Transactional
+    public void markAllAsRead() {
+        Users currentUser = securityUtils.getCurrentUser();
+        int updated = notificationRepository.markAllAsReadByUserId(currentUser.getId());
+        log.info("All notifications marked as read: userId={}, count={}", currentUser.getId(), updated);
+    }
+
+    @Transactional
     public void createNotification(Users recipient, NotificationType type, String content) {
         Notifications notification = Notifications.builder()
                 .user(recipient)

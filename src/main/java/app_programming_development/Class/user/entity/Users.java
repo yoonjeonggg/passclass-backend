@@ -39,8 +39,8 @@ public class Users{
     @Enumerated(EnumType.STRING)
     private UserRole role;
 
-    @Column(name="email_verified")
-    private Boolean emailVerified;
+    @Column(name="email_verified", nullable = false, columnDefinition = "boolean default false")
+    private boolean emailVerified;
 
     @CreatedDate
     @Column(name="created_at", nullable = false)

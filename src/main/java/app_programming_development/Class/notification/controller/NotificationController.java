@@ -47,6 +47,17 @@ public class NotificationController {
         return ResponseEntity.ok(ApiResponse.ok(null, "읽음 처리되었습니다."));
     }
 
+    @PatchMapping("/read-all")
+    @Operation(summary = "알림 모두 읽음 처리", description = "모든 미읽음 알림을 읽음 처리합니다.")
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "요청 성공"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "로그인이 필요합니다.", content = @Content)
+    })
+    public ResponseEntity<ApiResponse<Void>> markAllAsRead() {
+        notificationService.markAllAsRead();
+        return ResponseEntity.ok(ApiResponse.ok(null, "모두 읽음 처리되었습니다."));
+    }
+
     @GetMapping("/unread-count")
     @Operation(summary = "읽지 않은 알림 개수 조회", description = "읽지 않은 알림 개수를 조회하는 API 입니다.")
     @ApiResponses(value = {

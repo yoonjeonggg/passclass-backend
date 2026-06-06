@@ -1,5 +1,6 @@
 package app_programming_development.Class.like.service;
 
+import app_programming_development.Class.config.CacheConfig;
 import app_programming_development.Class.dto.like.response.LikeResponse;
 import app_programming_development.Class.enums.NotificationType;
 import app_programming_development.Class.exceptions.notFound.LectureNotFoundException;
@@ -12,6 +13,7 @@ import app_programming_development.Class.security.SecurityUtils;
 import app_programming_development.Class.user.entity.Users;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,6 +28,7 @@ public class LikeService {
     private final SecurityUtils securityUtils;
 
     @Transactional
+    @CacheEvict(value = CacheConfig.LECTURES, allEntries = true)
     public LikeResponse toggleLike(Long lectureId) {
         Users currentUser = securityUtils.getCurrentUser();
         Lectures lecture = lectureRepository.findById(lectureId)

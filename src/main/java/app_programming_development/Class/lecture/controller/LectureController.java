@@ -38,13 +38,14 @@ public class LectureController {
     }
 
     @GetMapping
-    @Operation(summary = "강의 목록 조회", description = "강의 목록 조회 시 사용하는 API 입니다.")
+    @Operation(summary = "강의 목록 조회", description = "강의 목록 조회 시 사용하는 API 입니다. keyword 파라미터로 강의 제목/강사명 검색 가능.")
     public ResponseEntity<ApiResponse<Page<LectureListDto>>> getLectures(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(required = false) String category,
-            @RequestParam(defaultValue = "LATEST") SortType sort) {
-        Page<LectureListDto> result = lectureService.getLectures(page, size, category, sort);
+            @RequestParam(defaultValue = "LATEST") SortType sort,
+            @RequestParam(required = false) String keyword) {
+        Page<LectureListDto> result = lectureService.getLectures(page, size, category, sort, keyword);
         return ResponseEntity.ok(ApiResponse.ok(result, "조회되었습니다."));
     }
 

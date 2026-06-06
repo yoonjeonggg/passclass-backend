@@ -52,4 +52,12 @@ public class EnrollmentController {
         List<EnrollmentResponse> result = enrollmentService.getMyEnrollments();
         return ResponseEntity.ok(ApiResponse.ok(result, "조회되었습니다."));
     }
+
+    @GetMapping("/me/completed")
+    @Operation(summary = "수강 완료 강의 목록 조회", description = "완료된 수강 목록을 조회합니다.")
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "요청 성공")
+    public ResponseEntity<ApiResponse<List<EnrollmentResponse>>> getMyCompletedEnrollments() {
+        List<EnrollmentResponse> result = enrollmentService.getMyCompletedEnrollments();
+        return ResponseEntity.ok(ApiResponse.ok(result, "조회되었습니다."));
+    }
 }

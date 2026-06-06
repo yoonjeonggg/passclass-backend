@@ -4,6 +4,8 @@ import app_programming_development.Class.dto.review.request.ReviewRequest;
 import app_programming_development.Class.dto.review.response.ReviewResponse;
 import app_programming_development.Class.dto.review.response.ReviewSummaryResponse;
 import app_programming_development.Class.enrollment.repository.EnrollmentRepository;
+import app_programming_development.Class.enums.NotificationType;
+import app_programming_development.Class.enums.ReviewSortType;
 import app_programming_development.Class.exceptions.conflict.DuplicateReviewException;
 import app_programming_development.Class.exceptions.forbidden.NotEnrolledException;
 import app_programming_development.Class.exceptions.forbidden.NotReviewOwnerException;
@@ -12,6 +14,7 @@ import app_programming_development.Class.exceptions.notFound.LectureNotFoundExce
 import app_programming_development.Class.exceptions.notFound.ReviewNotFoundException;
 import app_programming_development.Class.lecture.entity.Lectures;
 import app_programming_development.Class.lecture.repository.LectureRepository;
+import app_programming_development.Class.notification.service.NotificationService;
 import app_programming_development.Class.review.entity.Reviews;
 import app_programming_development.Class.review.repository.ReviewRepository;
 import app_programming_development.Class.security.SecurityUtils;
@@ -34,6 +37,7 @@ public class ReviewService {
     private final LectureRepository lectureRepository;
     private final EnrollmentRepository enrollmentRepository;
     private final SecurityUtils securityUtils;
+    private final NotificationService notificationService;
 
     @Transactional
     public void createReview(ReviewRequest request) {
@@ -89,6 +93,20 @@ public class ReviewService {
     }
 
     @Transactional
+    public void deleteReview(Long reviewId) {
+        Users currentUser = securityUtils.getCurrentUser();
+        Reviews review = reviewRepository.findById(reviewId)
+                .orElseThrow(ReviewNotFoundException::new);
+
+        if (!Objects.equals(review.getUser().getId(), currentUser.getId())) {
+            throw new NotReviewOwnerException();
+        }
+
+        reviewRepository.delete(review);
+        log.info("Review deleted: reviewId={}, userId={}", reviewId, currentUser.getId());
+    }
+
+    @Transactional
     public void replyToReview(Long reviewId, String reply) {
         Users currentUser = securityUtils.getCurrentUser();
         Reviews review = reviewRepository.findById(reviewId)
@@ -101,17 +119,25 @@ public class ReviewService {
 
         review.setReply(reply);
         review.setReplyAt(LocalDateTime.now());
+
+        notificationService.createNotification(
+                review.getUser(),
+                NotificationType.REVIEW_COMMENT,
+                review.getLectures().getTitle() + " 강의 리뷰에 강사 답글이 등록되었습니다."
+        );
         log.info("Review replied by instructor: reviewId={}, instructorId={}", reviewId, currentUser.getId());
     }
 
     @Transactional(readOnly = true)
-    public List<ReviewResponse> getReviews(Long lectureId) {
+    public List<ReviewResponse> getReviews(Long lectureId, ReviewSortType sort) {
         if (!lectureRepository.existsById(lectureId)) {
             throw new LectureNotFoundException();
         }
-        return reviewRepository.findByLectures_IdOrderByCreatedAtDesc(lectureId)
-                .stream()
-                .map(ReviewResponse::from)
-                .toList();
+        List<Reviews> reviews = switch (sort) {
+            case RATING_HIGH -> reviewRepository.findByLectures_IdOrderByRatingDescCreatedAtDesc(lectureId);
+            case RATING_LOW -> reviewRepository.findByLectures_IdOrderByRatingAscCreatedAtDesc(lectureId);
+            default -> reviewRepository.findByLectures_IdOrderByCreatedAtDesc(lectureId);
+        };
+        return reviews.stream().map(ReviewResponse::from).toList();
     }
 }

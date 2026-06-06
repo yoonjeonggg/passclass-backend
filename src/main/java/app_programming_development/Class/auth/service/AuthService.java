@@ -1,13 +1,17 @@
 package app_programming_development.Class.auth.service;
 
+import app_programming_development.Class.auth.entity.EmailVerification;
 import app_programming_development.Class.auth.entity.RefreshTokens;
+import app_programming_development.Class.auth.repository.EmailVerificationRepository;
 import app_programming_development.Class.auth.repository.RefreshTokenRepository;
 import app_programming_development.Class.dto.auth.request.AutoLoginRequest;
+import app_programming_development.Class.dto.auth.request.EmailVerifyRequest;
 import app_programming_development.Class.dto.auth.request.LoginRequest;
 import app_programming_development.Class.dto.auth.request.SignupRequest;
 import app_programming_development.Class.dto.auth.response.SignupResponse;
 import app_programming_development.Class.dto.auth.response.TokenResponse;
 import app_programming_development.Class.enums.UserRole;
+import app_programming_development.Class.exceptions.badRequest.InvalidVerificationCodeException;
 import app_programming_development.Class.exceptions.conflict.UserAlreadyExistsException;
 import app_programming_development.Class.exceptions.notFound.RefreshTokenNotFoundException;
 import app_programming_development.Class.exceptions.notFound.UserNotFoundException;
@@ -26,6 +30,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.security.SecureRandom;
 import java.time.LocalDateTime;
 
 @Slf4j
@@ -40,6 +45,8 @@ public class AuthService {
     private final RefreshTokenRepository refreshTokenRepository;
     private final PasswordEncoder passwordEncoder;
     private final SecurityUtils securityUtils;
+    private final EmailVerificationRepository emailVerificationRepository;
+    private final EmailService emailService;
 
     public TokenResponse login(LoginRequest request) {
         Users user = userRepository.findByEmail(request.getEmail())
@@ -131,5 +138,38 @@ public class AuthService {
         Users user = securityUtils.getCurrentUser();
         refreshTokenRepository.deleteByUser(user);
         log.info("User logout: userId={}", user.getId());
+    }
+
+    @Transactional
+    public void sendVerificationEmail(String email) {
+        String code = String.format("%06d", new SecureRandom().nextInt(1000000));
+        emailVerificationRepository.deleteByEmail(email);
+        emailVerificationRepository.save(EmailVerification.builder()
+                .email(email)
+                .code(code)
+                .expiresAt(LocalDateTime.now().plusMinutes(5))
+                .build());
+        emailService.sendVerificationCode(email, code);
+        log.info("Verification email requested: email={}", email);
+    }
+
+    @Transactional
+    public void verifyEmail(EmailVerifyRequest request) {
+        EmailVerification verification = emailVerificationRepository
+                .findTopByEmailOrderByCreatedAtDesc(request.getEmail())
+                .orElseThrow(InvalidVerificationCodeException::new);
+
+        if (verification.isExpired() || !verification.getCode().equals(request.getCode())) {
+            throw new InvalidVerificationCodeException();
+        }
+
+        verification.verify();
+
+        userRepository.findByEmail(request.getEmail()).ifPresent(user -> {
+            user.setEmailVerified(true);
+            userRepository.save(user);
+        });
+
+        log.info("Email verified: email={}", request.getEmail());
     }
 }

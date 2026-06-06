@@ -9,4 +9,5 @@ import java.util.Optional;
 public interface WrongNotesRepository extends JpaRepository<WrongNotes, Long> {
     List<WrongNotes> findByUser_IdOrderByCreatedAtDesc(Long userId);
     Optional<WrongNotes> findByUser_IdAndProblems_Id(Long userId, Long problemId);
+    List<WrongNotes> findByUser_IdAndIsFavoriteOrderByCreatedAtDesc(Long userId, boolean isFavorite);
 }
