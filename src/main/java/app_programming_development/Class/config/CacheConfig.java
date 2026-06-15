@@ -17,15 +17,18 @@ public class CacheConfig {
     public static final String LECTURE_DETAIL = "lectureDetail";
     public static final String CERTIFICATES = "certificates";
     public static final String PROBLEMS = "problems";
+    public static final String MOCK_EXAMS = "mockExams";
+    public static final String REVIEWS = "reviews";
 
     @Bean
     public CacheManager cacheManager() {
         CaffeineCacheManager cacheManager = new CaffeineCacheManager(
-                LECTURES, LECTURE_DETAIL, CERTIFICATES, PROBLEMS
+                LECTURES, LECTURE_DETAIL, CERTIFICATES, PROBLEMS, MOCK_EXAMS, REVIEWS
         );
         cacheManager.setCaffeine(Caffeine.newBuilder()
                 .expireAfterWrite(10, TimeUnit.MINUTES)
-                .maximumSize(500));
+                .maximumSize(1000)
+                .recordStats());
         return cacheManager;
     }
 }

@@ -17,6 +17,7 @@ import app_programming_development.Class.exceptions.notFound.RefreshTokenNotFoun
 import app_programming_development.Class.exceptions.notFound.UserNotFoundException;
 import app_programming_development.Class.exceptions.unauthorized.PasswordMismatchException;
 import app_programming_development.Class.global.TokenProvider;
+import app_programming_development.Class.logging.AuditLog;
 import app_programming_development.Class.security.SecurityUtils;
 import app_programming_development.Class.user.entity.Users;
 import app_programming_development.Class.user.repository.UserRepository;
@@ -48,6 +49,7 @@ public class AuthService {
     private final EmailVerificationRepository emailVerificationRepository;
     private final EmailService emailService;
 
+    @AuditLog(action = "LOGIN")
     public TokenResponse login(LoginRequest request) {
         Users user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(UserNotFoundException::new);
@@ -81,6 +83,7 @@ public class AuthService {
                 .build();
     }
 
+    @AuditLog(action = "SIGNUP")
     public SignupResponse signup(SignupRequest request) {
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
             throw new UserAlreadyExistsException();

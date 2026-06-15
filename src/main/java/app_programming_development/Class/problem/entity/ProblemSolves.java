@@ -10,7 +10,11 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "problem_solves")
+@Table(name = "problem_solves", indexes = {
+        @Index(name = "idx_problem_solves_user_id", columnList = "user_id"),
+        @Index(name = "idx_problem_solves_problem_id", columnList = "problem_id"),
+        @Index(name = "idx_problem_solves_user_problem", columnList = "user_id, problem_id")
+})
 @Getter
 @Setter
 @NoArgsConstructor

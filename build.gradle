@@ -53,6 +53,12 @@ dependencies {
 	// mail
 	implementation 'org.springframework.boot:spring-boot-starter-mail'
 
+	// actuator
+	implementation 'org.springframework.boot:spring-boot-starter-actuator'
+
+	// AOP
+	implementation 'org.springframework.boot:spring-boot-starter-aop'
+
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 	testRuntimeOnly 'com.h2database:h2'

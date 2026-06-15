@@ -8,6 +8,7 @@ import app_programming_development.Class.exceptions.notFound.EnrollmentNotFoundE
 import app_programming_development.Class.exceptions.notFound.LectureNotFoundException;
 import app_programming_development.Class.lecture.entity.Lectures;
 import app_programming_development.Class.lecture.repository.LectureRepository;
+import app_programming_development.Class.logging.AuditLog;
 import app_programming_development.Class.security.SecurityUtils;
 import app_programming_development.Class.user.entity.Users;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +27,7 @@ public class EnrollmentService {
     private final LectureRepository lectureRepository;
     private final SecurityUtils securityUtils;
 
+    @AuditLog(action = "ENROLL")
     @Transactional
     public EnrollmentResponse enroll(Long lectureId) {
         Users currentUser = securityUtils.getCurrentUser();

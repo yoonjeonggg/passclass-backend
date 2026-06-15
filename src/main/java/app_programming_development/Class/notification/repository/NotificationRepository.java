@@ -8,6 +8,8 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDateTime;
+
 public interface NotificationRepository extends JpaRepository<Notifications, Long> {
     Page<Notifications> findByUser_IdOrderByCreatedAtDesc(Long userId, Pageable pageable);
     Page<Notifications> findByUser_IdAndIsReadOrderByCreatedAtDesc(Long userId, boolean isRead, Pageable pageable);
@@ -16,4 +18,8 @@ public interface NotificationRepository extends JpaRepository<Notifications, Lon
     @Modifying
     @Query("UPDATE Notifications n SET n.isRead = true WHERE n.user.id = :userId AND n.isRead = false")
     int markAllAsReadByUserId(@Param("userId") Long userId);
+
+    @Modifying
+    @Query("DELETE FROM Notifications n WHERE n.isRead = true AND n.createdAt < :cutoff")
+    int deleteOldReadNotifications(@Param("cutoff") LocalDateTime cutoff);
 }

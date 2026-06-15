@@ -8,7 +8,10 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "email_verifications")
+@Table(name = "email_verifications", indexes = {
+        @Index(name = "idx_email_verifications_email", columnList = "email"),
+        @Index(name = "idx_email_verifications_expires_at", columnList = "expires_at")
+})
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @EntityListeners(AuditingEntityListener.class)

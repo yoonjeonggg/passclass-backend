@@ -10,7 +10,11 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "notifications")
+@Table(name = "notifications", indexes = {
+        @Index(name = "idx_notifications_user_id", columnList = "user_id"),
+        @Index(name = "idx_notifications_user_read", columnList = "user_id, is_read"),
+        @Index(name = "idx_notifications_created_at", columnList = "created_at")
+})
 @Getter
 @Setter
 @NoArgsConstructor
