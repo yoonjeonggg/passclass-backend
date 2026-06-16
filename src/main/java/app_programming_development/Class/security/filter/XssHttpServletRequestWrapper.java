@@ -15,7 +15,13 @@ public class XssHttpServletRequestWrapper extends HttpServletRequestWrapper {
     public XssHttpServletRequestWrapper(HttpServletRequest request) throws IOException {
         super(request);
         String requestBody = new String(request.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
-        this.body = sanitize(requestBody).getBytes(StandardCharsets.UTF_8);
+        String contentType = request.getContentType();
+        // JSON 바디는 sanitize하면 따옴표 등 구조 문자가 HTML 엔티티로 변환돼 파싱 불가 → 그대로 유지
+        if (contentType != null && contentType.startsWith("application/json")) {
+            this.body = requestBody.getBytes(StandardCharsets.UTF_8);
+        } else {
+            this.body = sanitize(requestBody).getBytes(StandardCharsets.UTF_8);
+        }
     }
 
     @Override

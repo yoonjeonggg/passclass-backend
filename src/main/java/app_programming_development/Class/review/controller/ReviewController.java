@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -34,7 +35,7 @@ public class ReviewController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "해당 강의를 찾을 수 없습니다.", content = @Content),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "409", description = "이미 리뷰를 작성한 강의입니다.", content = @Content)
     })
-    public ResponseEntity<ApiResponse<Void>> createReview(@RequestBody ReviewRequest request) {
+    public ResponseEntity<ApiResponse<Void>> createReview(@Valid @RequestBody ReviewRequest request) {
         reviewService.createReview(request);
         return ResponseEntity.ok(ApiResponse.ok("리뷰가 등록되었습니다."));
     }
@@ -47,7 +48,7 @@ public class ReviewController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "본인의 리뷰만 수정할 수 있습니다.", content = @Content),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "해당 리뷰를 찾을 수 없습니다.", content = @Content)
     })
-    public ResponseEntity<ApiResponse<Void>> updateReview(@PathVariable Long reviewId, @RequestBody ReviewRequest request) {
+    public ResponseEntity<ApiResponse<Void>> updateReview(@PathVariable Long reviewId, @Valid @RequestBody ReviewRequest request) {
         reviewService.updateReview(reviewId, request);
         return ResponseEntity.ok(ApiResponse.ok("리뷰가 수정되었습니다."));
     }

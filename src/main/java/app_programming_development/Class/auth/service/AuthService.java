@@ -17,6 +17,7 @@ import app_programming_development.Class.exceptions.notFound.RefreshTokenNotFoun
 import app_programming_development.Class.exceptions.notFound.UserNotFoundException;
 import app_programming_development.Class.exceptions.unauthorized.PasswordMismatchException;
 import app_programming_development.Class.global.TokenProvider;
+import app_programming_development.Class.discord.DiscordWebhookService;
 import app_programming_development.Class.logging.AuditLog;
 import app_programming_development.Class.security.SecurityUtils;
 import app_programming_development.Class.user.entity.Users;
@@ -48,6 +49,7 @@ public class AuthService {
     private final SecurityUtils securityUtils;
     private final EmailVerificationRepository emailVerificationRepository;
     private final EmailService emailService;
+    private final DiscordWebhookService discordWebhookService;
 
     @AuditLog(action = "LOGIN")
     public TokenResponse login(LoginRequest request) {
@@ -89,6 +91,13 @@ public class AuthService {
             throw new UserAlreadyExistsException();
         }
 
+        EmailVerification verification = emailVerificationRepository
+                .findTopByEmailOrderByCreatedAtDesc(request.getEmail())
+                .orElseThrow(InvalidVerificationCodeException::new);
+        if (!verification.isVerified()) {
+            throw new InvalidVerificationCodeException();
+        }
+
         Users user = Users.builder()
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
@@ -100,6 +109,7 @@ public class AuthService {
 
         userRepository.save(user);
         log.info("New user registered: userId={}, role={}", user.getId(), user.getRole());
+        discordWebhookService.sendNewUser(user.getNickname(), user.getRole().name());
         return SignupResponse.from(user);
     }
 
@@ -147,6 +157,7 @@ public class AuthService {
     public void sendVerificationEmail(String email) {
         String code = String.format("%06d", new SecureRandom().nextInt(1000000));
         emailVerificationRepository.deleteByEmail(email);
+        
         emailVerificationRepository.save(EmailVerification.builder()
                 .email(email)
                 .code(code)

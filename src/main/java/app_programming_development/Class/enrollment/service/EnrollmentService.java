@@ -8,6 +8,7 @@ import app_programming_development.Class.exceptions.notFound.EnrollmentNotFoundE
 import app_programming_development.Class.exceptions.notFound.LectureNotFoundException;
 import app_programming_development.Class.lecture.entity.Lectures;
 import app_programming_development.Class.lecture.repository.LectureRepository;
+import app_programming_development.Class.discord.DiscordWebhookService;
 import app_programming_development.Class.logging.AuditLog;
 import app_programming_development.Class.security.SecurityUtils;
 import app_programming_development.Class.user.entity.Users;
@@ -26,6 +27,7 @@ public class EnrollmentService {
     private final EnrollmentRepository enrollmentRepository;
     private final LectureRepository lectureRepository;
     private final SecurityUtils securityUtils;
+    private final DiscordWebhookService discordWebhookService;
 
     @AuditLog(action = "ENROLL")
     @Transactional
@@ -46,6 +48,7 @@ public class EnrollmentService {
 
         enrollmentRepository.save(enrollment);
         log.info("Enrollment created: userId={}, lectureId={}", currentUser.getId(), lectureId);
+        discordWebhookService.sendEnrollment(currentUser.getNickname(), lecture.getTitle());
         return EnrollmentResponse.from(enrollment);
     }
 

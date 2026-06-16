@@ -17,8 +17,11 @@ import app_programming_development.Class.like.repository.LectureLikeRepository;
 import app_programming_development.Class.enrollment.repository.EnrollmentRepository;
 import app_programming_development.Class.chapter.repository.LectureChapterRepository;
 import app_programming_development.Class.certificate.repository.CertificateRepository;
+import app_programming_development.Class.discord.DiscordWebhookService;
 import app_programming_development.Class.lecture.service.LectureService;
+import app_programming_development.Class.notification.service.NotificationService;
 import app_programming_development.Class.security.SecurityUtils;
+import app_programming_development.Class.user.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -39,12 +42,15 @@ import static org.mockito.BDDMockito.*;
 class LectureServiceTest {
 
     @Mock private LectureRepository lectureRepository;
+    @Mock private UserRepository userRepository;
     @Mock private ReviewRepository reviewRepository;
     @Mock private LectureLikeRepository lectureLikeRepository;
     @Mock private EnrollmentRepository enrollmentRepository;
     @Mock private LectureChapterRepository lectureChapterRepository;
     @Mock private CertificateRepository certificateRepository;
     @Mock private SecurityUtils securityUtils;
+    @Mock private NotificationService notificationService;
+    @Mock private DiscordWebhookService discordWebhookService;
 
     @InjectMocks
     private LectureService lectureService;
@@ -92,7 +98,7 @@ class LectureServiceTest {
                 .willReturn(new PageImpl<>(List.of(lecture)));
         given(reviewRepository.getAverageRating(any())).willReturn(4.5);
 
-        Page<LectureListDto> result = lectureService.getLectures(0, 10, null, SortType.LATEST);
+        Page<LectureListDto> result = lectureService.getLectures(0, 10, null, SortType.LATEST, null);
 
         assertThat(result.getContent()).hasSize(1);
         assertThat(result.getContent().get(0).getRating()).isEqualTo(4.5);
@@ -105,7 +111,7 @@ class LectureServiceTest {
                 .willReturn(new PageImpl<>(List.of(lecture)));
         given(reviewRepository.getAverageRating(any())).willReturn(null);
 
-        Page<LectureListDto> result = lectureService.getLectures(0, 10, null, SortType.LATEST);
+        Page<LectureListDto> result = lectureService.getLectures(0, 10, null, SortType.LATEST, null);
 
         assertThat(result.getContent().get(0).getRating()).isEqualTo(0.0);
     }
@@ -117,7 +123,7 @@ class LectureServiceTest {
                 .willReturn(new PageImpl<>(List.of(lecture)));
         given(reviewRepository.getAverageRating(any())).willReturn(0.0);
 
-        Page<LectureListDto> result = lectureService.getLectures(0, 10, "백엔드", SortType.LATEST);
+        Page<LectureListDto> result = lectureService.getLectures(0, 10, "백엔드", SortType.LATEST, null);
 
         assertThat(result.getContent()).hasSize(1);
         then(lectureRepository).should().findByCategory(eq("백엔드"), any(Pageable.class));

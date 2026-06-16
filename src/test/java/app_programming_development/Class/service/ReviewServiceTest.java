@@ -13,8 +13,11 @@ import app_programming_development.Class.exceptions.forbidden.NotEnrolledExcepti
 import app_programming_development.Class.exceptions.forbidden.NotReviewOwnerException;
 import app_programming_development.Class.exceptions.notFound.LectureNotFoundException;
 import app_programming_development.Class.exceptions.notFound.ReviewNotFoundException;
+import app_programming_development.Class.discord.DiscordWebhookService;
 import app_programming_development.Class.enrollment.repository.EnrollmentRepository;
+import app_programming_development.Class.enums.ReviewSortType;
 import app_programming_development.Class.lecture.repository.LectureRepository;
+import app_programming_development.Class.notification.service.NotificationService;
 import app_programming_development.Class.review.repository.ReviewRepository;
 import app_programming_development.Class.review.service.ReviewService;
 import app_programming_development.Class.security.SecurityUtils;
@@ -40,6 +43,8 @@ class ReviewServiceTest {
     @Mock private LectureRepository lectureRepository;
     @Mock private EnrollmentRepository enrollmentRepository;
     @Mock private SecurityUtils securityUtils;
+    @Mock private NotificationService notificationService;
+    @Mock private DiscordWebhookService discordWebhookService;
 
     @InjectMocks
     private ReviewService reviewService;
@@ -189,7 +194,7 @@ class ReviewServiceTest {
         given(lectureRepository.existsById(1L)).willReturn(true);
         given(reviewRepository.findByLectures_IdOrderByCreatedAtDesc(1L)).willReturn(List.of(review));
 
-        List<ReviewResponse> result = reviewService.getReviews(1L);
+        List<ReviewResponse> result = reviewService.getReviews(1L, ReviewSortType.LATEST);
 
         assertThat(result).hasSize(1);
         assertThat(result.get(0).getNickname()).isEqualTo("학생");
@@ -200,7 +205,7 @@ class ReviewServiceTest {
     void getReviews_강의없음_예외() {
         given(lectureRepository.existsById(999L)).willReturn(false);
 
-        assertThatThrownBy(() -> reviewService.getReviews(999L))
+        assertThatThrownBy(() -> reviewService.getReviews(999L, ReviewSortType.LATEST))
                 .isInstanceOf(LectureNotFoundException.class);
     }
 }

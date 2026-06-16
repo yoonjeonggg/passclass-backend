@@ -3,6 +3,7 @@ package app_programming_development.Class.review.service;
 import app_programming_development.Class.dto.review.request.ReviewRequest;
 import app_programming_development.Class.dto.review.response.ReviewResponse;
 import app_programming_development.Class.dto.review.response.ReviewSummaryResponse;
+import app_programming_development.Class.discord.DiscordWebhookService;
 import app_programming_development.Class.enrollment.repository.EnrollmentRepository;
 import app_programming_development.Class.enums.NotificationType;
 import app_programming_development.Class.enums.ReviewSortType;
@@ -38,6 +39,7 @@ public class ReviewService {
     private final EnrollmentRepository enrollmentRepository;
     private final SecurityUtils securityUtils;
     private final NotificationService notificationService;
+    private final DiscordWebhookService discordWebhookService;
 
     @Transactional
     public void createReview(ReviewRequest request) {
@@ -62,6 +64,9 @@ public class ReviewService {
         reviewRepository.save(review);
         log.info("Review created: userId={}, lectureId={}, rating={}",
                 currentUser.getId(), lecture.getId(), request.getRating());
+        if (request.getRating() != null) {
+            discordWebhookService.sendNewReview(currentUser.getNickname(), lecture.getTitle(), (int) Math.round(request.getRating()));
+        }
     }
 
     @Transactional

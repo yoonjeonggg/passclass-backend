@@ -14,7 +14,7 @@ public class EmailService {
 
     private final JavaMailSender mailSender;
 
-    @Value("${spring.mail.from}")
+    @Value("${spring.mail.from:noreply@passclass.com}")
     private String from;
 
     public void sendVerificationCode(String to, String code) {

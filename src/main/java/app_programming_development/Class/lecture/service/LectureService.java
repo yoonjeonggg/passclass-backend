@@ -27,6 +27,7 @@ import app_programming_development.Class.exceptions.unauthorized.NotAuthenticate
 import app_programming_development.Class.lecture.entity.Lectures;
 import app_programming_development.Class.lecture.repository.LectureRepository;
 import app_programming_development.Class.like.repository.LectureLikeRepository;
+import app_programming_development.Class.discord.DiscordWebhookService;
 import app_programming_development.Class.notification.service.NotificationService;
 import app_programming_development.Class.review.repository.ReviewRepository;
 import app_programming_development.Class.security.SecurityUtils;
@@ -37,7 +38,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -61,11 +61,10 @@ public class LectureService {
     private final LectureChapterRepository lectureChapterRepository;
     private final CertificateRepository certificateRepository;
     private final NotificationService notificationService;
+    private final DiscordWebhookService discordWebhookService;
 
     @Transactional
-    @Caching(evict = {
-            @CacheEvict(value = CacheConfig.LECTURES, allEntries = true)
-    })
+    @CacheEvict(value = CacheConfig.LECTURES, allEntries = true)
     public LectureCreateResponse createLecture(LectureRequest request) {
         Users instructor = securityUtils.getCurrentUser();
         if (!instructor.getRole().equals(UserRole.TEACHER)) {
@@ -88,6 +87,7 @@ public class LectureService {
 
         log.info("Lecture created: lectureId={}, instructorId={}, title={}",
                 lecture.getId(), instructor.getId(), lecture.getTitle());
+        discordWebhookService.sendNewLecture(lecture.getTitle(), instructor.getNickname(), lecture.getCategory());
         return LectureCreateResponse.from(lecture);
     }
 
@@ -140,10 +140,7 @@ public class LectureService {
     }
 
     @Transactional
-    @Caching(evict = {
-            @CacheEvict(value = CacheConfig.LECTURES, allEntries = true),
-            @CacheEvict(value = CacheConfig.LECTURE_DETAIL, key = "#lectureId")
-    })
+    @CacheEvict(value = CacheConfig.LECTURES, allEntries = true)
     public void updateLecture(Long lectureId, LectureRequest request) {
         Users currentUser = securityUtils.getCurrentUser();
         Lectures lecture = lectureRepository.findById(lectureId)
@@ -176,10 +173,7 @@ public class LectureService {
     }
 
     @Transactional
-    @Caching(evict = {
-            @CacheEvict(value = CacheConfig.LECTURES, allEntries = true),
-            @CacheEvict(value = CacheConfig.LECTURE_DETAIL, key = "#lectureId")
-    })
+    @CacheEvict(value = CacheConfig.LECTURES, allEntries = true)
     public void deleteLecture(Long lectureId) {
         Users currentUser = securityUtils.getCurrentUser();
         Lectures lecture = lectureRepository.findById(lectureId)

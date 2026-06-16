@@ -12,6 +12,7 @@ import app_programming_development.Class.dto.mockexam.response.MockExamQuestions
 import app_programming_development.Class.dto.mockexam.response.MockExamSubmitResponse;
 import app_programming_development.Class.enums.UserRole;
 import app_programming_development.Class.exceptions.forbidden.TeacherRoleRequiredException;
+import app_programming_development.Class.exceptions.unauthorized.NotAuthenticatedException;
 import app_programming_development.Class.exceptions.notFound.CertificateNotFoundException;
 import app_programming_development.Class.exceptions.notFound.MockExamNotFoundException;
 import app_programming_development.Class.exceptions.notFound.ProblemNotFoundException;
@@ -109,7 +110,7 @@ class MockExamServiceTest {
             return e;
         });
 
-        MockExamCreateResponse result = mockExamService.createMockExam(new MockExamCreateRequest(1L, "1회 모의고사"));
+        MockExamCreateResponse result = mockExamService.createMockExam(new MockExamCreateRequest(1L, "1회 모의고사", 60));
 
         assertThat(result.getId()).isEqualTo(100L);
         then(mockExamRepository).should().save(any());
@@ -123,7 +124,7 @@ class MockExamServiceTest {
         given(mockExamRepository.save(any())).willReturn(exam);
 
         assertThatNoException().isThrownBy(() ->
-                mockExamService.createMockExam(new MockExamCreateRequest(1L, "1회 모의고사")));
+                mockExamService.createMockExam(new MockExamCreateRequest(1L, "1회 모의고사", 60)));
     }
 
     @Test
@@ -131,7 +132,7 @@ class MockExamServiceTest {
     void createMockExam_USER_예외() {
         given(securityUtils.getCurrentUser()).willReturn(student);
 
-        assertThatThrownBy(() -> mockExamService.createMockExam(new MockExamCreateRequest(1L, "모의고사")))
+        assertThatThrownBy(() -> mockExamService.createMockExam(new MockExamCreateRequest(1L, "모의고사", 60)))
                 .isInstanceOf(TeacherRoleRequiredException.class);
         then(mockExamRepository).should(never()).save(any());
     }
@@ -142,7 +143,7 @@ class MockExamServiceTest {
         given(securityUtils.getCurrentUser()).willReturn(teacher);
         given(certificateRepository.findById(999L)).willReturn(Optional.empty());
 
-        assertThatThrownBy(() -> mockExamService.createMockExam(new MockExamCreateRequest(999L, "모의고사")))
+        assertThatThrownBy(() -> mockExamService.createMockExam(new MockExamCreateRequest(999L, "모의고사", 60)))
                 .isInstanceOf(CertificateNotFoundException.class);
     }
 
@@ -153,7 +154,7 @@ class MockExamServiceTest {
     void getMockExams_비로그인_미완료() {
         given(mockExamRepository.findByCertificates_IdOrderByCreatedAtDesc(1L))
                 .willReturn(List.of(exam));
-        given(securityUtils.getCurrentUser()).willThrow(new RuntimeException("not authenticated"));
+        given(securityUtils.getCurrentUser()).willThrow(new NotAuthenticatedException());
 
         List<MockExamListResponse> result = mockExamService.getMockExams(1L);
 

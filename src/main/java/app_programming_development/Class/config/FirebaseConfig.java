@@ -15,10 +15,10 @@ import java.io.IOException;
 @Configuration
 public class FirebaseConfig {
 
-    @Value("${firebase.configuration-file}")
+    @Value("${firebase.configuration-file:}")
     private String account;
 
-    @Value("${firebase.bucket}")
+    @Value("${firebase.bucket:}")
     private String bucket;
 
     @Autowired
