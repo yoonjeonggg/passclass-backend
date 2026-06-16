@@ -13,10 +13,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/reviews")
@@ -70,10 +69,12 @@ public class ReviewController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "요청 성공"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "해당 강의를 찾을 수 없습니다.", content = @Content)
     })
-    public ResponseEntity<ApiResponse<List<ReviewResponse>>> getReviews(
+    public ResponseEntity<ApiResponse<Page<ReviewResponse>>> getReviews(
             @RequestParam Long lectureId,
-            @RequestParam(defaultValue = "LATEST") ReviewSortType sort) {
-        List<ReviewResponse> result = reviewService.getReviews(lectureId, sort);
+            @RequestParam(defaultValue = "LATEST") ReviewSortType sort,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        Page<ReviewResponse> result = reviewService.getReviews(lectureId, sort, page, size);
         return ResponseEntity.ok(ApiResponse.ok(result, "조회되었습니다."));
     }
 

@@ -14,6 +14,8 @@ import app_programming_development.Class.security.SecurityUtils;
 import app_programming_development.Class.user.entity.Users;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -65,20 +67,16 @@ public class EnrollmentService {
     }
 
     @Transactional(readOnly = true)
-    public List<EnrollmentResponse> getMyEnrollments() {
+    public Page<EnrollmentResponse> getMyEnrollments(int page, int size) {
         Users currentUser = securityUtils.getCurrentUser();
-        return enrollmentRepository.findByUserId(currentUser.getId())
-                .stream()
-                .map(EnrollmentResponse::from)
-                .toList();
+        return enrollmentRepository.findByUserId(currentUser.getId(), PageRequest.of(page, size))
+                .map(EnrollmentResponse::from);
     }
 
     @Transactional(readOnly = true)
-    public List<EnrollmentResponse> getMyCompletedEnrollments() {
+    public Page<EnrollmentResponse> getMyCompletedEnrollments(int page, int size) {
         Users currentUser = securityUtils.getCurrentUser();
-        return enrollmentRepository.findByUserIdAndIsCompleted(currentUser.getId(), true)
-                .stream()
-                .map(EnrollmentResponse::from)
-                .toList();
+        return enrollmentRepository.findByUserIdAndIsCompleted(currentUser.getId(), true, PageRequest.of(page, size))
+                .map(EnrollmentResponse::from);
     }
 }

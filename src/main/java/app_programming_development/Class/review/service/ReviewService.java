@@ -22,6 +22,8 @@ import app_programming_development.Class.security.SecurityUtils;
 import app_programming_development.Class.user.entity.Users;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -134,15 +136,16 @@ public class ReviewService {
     }
 
     @Transactional(readOnly = true)
-    public List<ReviewResponse> getReviews(Long lectureId, ReviewSortType sort) {
+    public Page<ReviewResponse> getReviews(Long lectureId, ReviewSortType sort, int page, int size) {
         if (!lectureRepository.existsById(lectureId)) {
             throw new LectureNotFoundException();
         }
-        List<Reviews> reviews = switch (sort) {
-            case RATING_HIGH -> reviewRepository.findByLectures_IdOrderByRatingDescCreatedAtDesc(lectureId);
-            case RATING_LOW -> reviewRepository.findByLectures_IdOrderByRatingAscCreatedAtDesc(lectureId);
-            default -> reviewRepository.findByLectures_IdOrderByCreatedAtDesc(lectureId);
+        PageRequest pageable = PageRequest.of(page, size);
+        Page<Reviews> reviews = switch (sort) {
+            case RATING_HIGH -> reviewRepository.findByLectures_IdOrderByRatingDescCreatedAtDesc(lectureId, pageable);
+            case RATING_LOW -> reviewRepository.findByLectures_IdOrderByRatingAscCreatedAtDesc(lectureId, pageable);
+            default -> reviewRepository.findByLectures_IdOrderByCreatedAtDesc(lectureId, pageable);
         };
-        return reviews.stream().map(ReviewResponse::from).toList();
+        return reviews.map(ReviewResponse::from);
     }
 }

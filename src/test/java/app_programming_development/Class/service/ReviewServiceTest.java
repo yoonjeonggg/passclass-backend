@@ -192,12 +192,13 @@ class ReviewServiceTest {
     @DisplayName("리뷰 목록 조회 - 성공")
     void getReviews_성공() {
         given(lectureRepository.existsById(1L)).willReturn(true);
-        given(reviewRepository.findByLectures_IdOrderByCreatedAtDesc(1L)).willReturn(List.of(review));
+        given(reviewRepository.findByLectures_IdOrderByCreatedAtDesc(eq(1L), any()))
+                .willReturn(new org.springframework.data.domain.PageImpl<>(List.of(review)));
 
-        List<ReviewResponse> result = reviewService.getReviews(1L, ReviewSortType.LATEST);
+        org.springframework.data.domain.Page<ReviewResponse> result = reviewService.getReviews(1L, ReviewSortType.LATEST, 0, 10);
 
-        assertThat(result).hasSize(1);
-        assertThat(result.get(0).getNickname()).isEqualTo("학생");
+        assertThat(result.getContent()).hasSize(1);
+        assertThat(result.getContent().get(0).getNickname()).isEqualTo("학생");
     }
 
     @Test
@@ -205,7 +206,7 @@ class ReviewServiceTest {
     void getReviews_강의없음_예외() {
         given(lectureRepository.existsById(999L)).willReturn(false);
 
-        assertThatThrownBy(() -> reviewService.getReviews(999L, ReviewSortType.LATEST))
+        assertThatThrownBy(() -> reviewService.getReviews(999L, ReviewSortType.LATEST, 0, 10))
                 .isInstanceOf(LectureNotFoundException.class);
     }
 }

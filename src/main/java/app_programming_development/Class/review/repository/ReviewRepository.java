@@ -1,6 +1,8 @@
 package app_programming_development.Class.review.repository;
 
 import app_programming_development.Class.review.entity.Reviews;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -20,5 +22,8 @@ public interface ReviewRepository extends JpaRepository<Reviews, Long> {
     List<Reviews> findByLectures_IdOrderByCreatedAtDesc(Long lectureId);
     List<Reviews> findByLectures_IdOrderByRatingDescCreatedAtDesc(Long lectureId);
     List<Reviews> findByLectures_IdOrderByRatingAscCreatedAtDesc(Long lectureId);
+    Page<Reviews> findByLectures_IdOrderByCreatedAtDesc(Long lectureId, Pageable pageable);
+    Page<Reviews> findByLectures_IdOrderByRatingDescCreatedAtDesc(Long lectureId, Pageable pageable);
+    Page<Reviews> findByLectures_IdOrderByRatingAscCreatedAtDesc(Long lectureId, Pageable pageable);
     Optional<Reviews> findByUser_IdAndLectures_Id(Long userId, Long lectureId);
 }

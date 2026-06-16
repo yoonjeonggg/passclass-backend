@@ -7,10 +7,9 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/enrollment")
@@ -48,16 +47,20 @@ public class EnrollmentController {
     @GetMapping("/me")
     @Operation(summary = "내 수강 목록 조회", description = "내 수강 목록 조회 시 사용하는 API 입니다.")
     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "요청 성공")
-    public ResponseEntity<ApiResponse<List<EnrollmentResponse>>> getMyEnrollments() {
-        List<EnrollmentResponse> result = enrollmentService.getMyEnrollments();
+    public ResponseEntity<ApiResponse<Page<EnrollmentResponse>>> getMyEnrollments(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        Page<EnrollmentResponse> result = enrollmentService.getMyEnrollments(page, size);
         return ResponseEntity.ok(ApiResponse.ok(result, "조회되었습니다."));
     }
 
     @GetMapping("/me/completed")
     @Operation(summary = "수강 완료 강의 목록 조회", description = "완료된 수강 목록을 조회합니다.")
     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "요청 성공")
-    public ResponseEntity<ApiResponse<List<EnrollmentResponse>>> getMyCompletedEnrollments() {
-        List<EnrollmentResponse> result = enrollmentService.getMyCompletedEnrollments();
+    public ResponseEntity<ApiResponse<Page<EnrollmentResponse>>> getMyCompletedEnrollments(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        Page<EnrollmentResponse> result = enrollmentService.getMyCompletedEnrollments(page, size);
         return ResponseEntity.ok(ApiResponse.ok(result, "조회되었습니다."));
     }
 }
