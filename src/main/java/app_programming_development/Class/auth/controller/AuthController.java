@@ -5,6 +5,7 @@ import app_programming_development.Class.dto.auth.request.AutoLoginRequest;
 import app_programming_development.Class.dto.auth.request.EmailSendRequest;
 import app_programming_development.Class.dto.auth.request.EmailVerifyRequest;
 import app_programming_development.Class.dto.auth.request.LoginRequest;
+import app_programming_development.Class.dto.auth.request.PasswordResetConfirmRequest;
 import app_programming_development.Class.dto.auth.request.SignupRequest;
 import app_programming_development.Class.dto.auth.response.SignupResponse;
 import app_programming_development.Class.dto.auth.response.TokenResponse;
@@ -94,5 +95,28 @@ public class AuthController {
     public ResponseEntity<ApiResponse<Void>> verifyEmail(@Valid @RequestBody EmailVerifyRequest request) {
         authService.verifyEmail(request);
         return ResponseEntity.ok(ApiResponse.ok("이메일 인증이 완료되었습니다."));
+    }
+
+    @PostMapping("/password/reset")
+    @Operation(summary = "비밀번호 재설정 코드 발송", description = "가입된 이메일로 비밀번호 재설정 코드를 발송합니다.")
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "요청 성공"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "계정이 존재하지 않습니다.", content = @Content)
+    })
+    public ResponseEntity<ApiResponse<Void>> sendPasswordResetEmail(@Valid @RequestBody EmailSendRequest request) {
+        authService.sendPasswordResetEmail(request.getEmail());
+        return ResponseEntity.ok(ApiResponse.ok("비밀번호 재설정 코드가 발송되었습니다."));
+    }
+
+    @PostMapping("/password/confirm")
+    @Operation(summary = "비밀번호 재설정", description = "인증 코드와 새 비밀번호로 비밀번호를 재설정합니다.")
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "요청 성공"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "유효하지 않거나 만료된 인증 코드", content = @Content),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "계정이 존재하지 않습니다.", content = @Content)
+    })
+    public ResponseEntity<ApiResponse<Void>> confirmPasswordReset(@Valid @RequestBody PasswordResetConfirmRequest request) {
+        authService.confirmPasswordReset(request);
+        return ResponseEntity.ok(ApiResponse.ok("비밀번호가 재설정되었습니다."));
     }
 }

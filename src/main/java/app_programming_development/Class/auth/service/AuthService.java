@@ -7,6 +7,7 @@ import app_programming_development.Class.auth.repository.RefreshTokenRepository;
 import app_programming_development.Class.dto.auth.request.AutoLoginRequest;
 import app_programming_development.Class.dto.auth.request.EmailVerifyRequest;
 import app_programming_development.Class.dto.auth.request.LoginRequest;
+import app_programming_development.Class.dto.auth.request.PasswordResetConfirmRequest;
 import app_programming_development.Class.dto.auth.request.SignupRequest;
 import app_programming_development.Class.dto.auth.response.SignupResponse;
 import app_programming_development.Class.dto.auth.response.TokenResponse;
@@ -165,6 +166,31 @@ public class AuthService {
                 .build());
         emailService.sendVerificationCode(email, code);
         log.info("Verification email requested: email={}", email);
+    }
+
+    @Transactional
+    public void sendPasswordResetEmail(String email) {
+        userRepository.findByEmail(email).orElseThrow(UserNotFoundException::new);
+        sendVerificationEmail(email);
+        log.info("Password reset email requested: email={}", email);
+    }
+
+    @Transactional
+    public void confirmPasswordReset(PasswordResetConfirmRequest request) {
+        Users user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(UserNotFoundException::new);
+
+        EmailVerification verification = emailVerificationRepository
+                .findTopByEmailOrderByCreatedAtDesc(request.getEmail())
+                .orElseThrow(InvalidVerificationCodeException::new);
+
+        if (verification.isExpired() || !verification.getCode().equals(request.getCode())) {
+            throw new InvalidVerificationCodeException();
+        }
+
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        emailVerificationRepository.deleteByEmail(request.getEmail());
+        log.info("Password reset completed: userId={}", user.getId());
     }
 
     @Transactional
