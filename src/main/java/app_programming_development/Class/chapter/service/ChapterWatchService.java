@@ -107,8 +107,9 @@ public class ChapterWatchService {
         LectureChapters chapter = lectureChapterRepository.findById(chapterId)
                 .orElseThrow(ChapterNotFoundException::new);
 
-        if (!enrollmentRepository.existsByUserIdAndLecturesId(
-                currentUser.getId(), chapter.getLectures().getId())) {
+        Long lectureId = chapter.getLectures().getId();
+
+        if (!enrollmentRepository.existsByUserIdAndLecturesId(currentUser.getId(), lectureId)) {
             throw new NotEnrolledException();
         }
 
@@ -122,6 +123,17 @@ public class ChapterWatchService {
                 ));
 
         progress.markCompleted();
-        log.info("Chapter completed: userId={}, chapterId={}", currentUser.getId(), chapterId);
+
+        // 전체/완료 챕터 수 기반으로 수강 진도 및 완료 여부 자동 업데이트
+        int totalChapters = lectureChapterRepository.countByLectures_Id(lectureId);
+        int completedChapters = (int) chapterProgressRepository
+                .findByUser_IdAndChapter_Lectures_Id(currentUser.getId(), lectureId)
+                .stream().filter(ChapterProgress::isCompleted).count();
+
+        enrollmentRepository.findByUserIdAndLecturesId(currentUser.getId(), lectureId)
+                .ifPresent(enrollment -> enrollment.updateProgress(completedChapters, totalChapters));
+
+        log.info("Chapter completed: userId={}, chapterId={}, progress={}/{}",
+                currentUser.getId(), chapterId, completedChapters, totalChapters);
     }
 }

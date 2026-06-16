@@ -8,4 +8,5 @@ import java.util.List;
 public interface LectureChapterRepository extends JpaRepository<LectureChapters, Long> {
     List<LectureChapters> findByLectures_Id(Long lectureId);
     List<LectureChapters> findByLectures_IdOrderByChapterOrderAsc(Long lectureId);
+    int countByLectures_Id(Long lectureId);
 }
