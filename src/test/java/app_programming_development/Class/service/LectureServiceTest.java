@@ -31,6 +31,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.*;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -89,6 +90,7 @@ class LectureServiceTest {
                 .category("백엔드")
                 .thumbnailUrl("http://example.com/thumb.jpg")
                 .build();
+        lecture.setId(1L);
     }
 
     @Test
@@ -96,7 +98,10 @@ class LectureServiceTest {
     void getLectures_rating이_실제값으로_계산된다() {
         given(lectureRepository.findAll(any(Pageable.class)))
                 .willReturn(new PageImpl<>(List.of(lecture)));
-        given(reviewRepository.getAverageRating(any())).willReturn(4.5);
+        given(reviewRepository.findAverageRatingsByLectureIds(any()))
+                .willReturn(Collections.singletonList(new Object[]{1L, 4.5}));
+        given(enrollmentRepository.countsByLectureIds(any())).willReturn(Collections.emptyList());
+        given(lectureLikeRepository.countsByLectureIds(any())).willReturn(Collections.emptyList());
 
         Page<LectureListDto> result = lectureService.getLectures(0, 10, null, SortType.LATEST, null);
 
@@ -109,7 +114,9 @@ class LectureServiceTest {
     void getLectures_리뷰없을때_별점_0() {
         given(lectureRepository.findAll(any(Pageable.class)))
                 .willReturn(new PageImpl<>(List.of(lecture)));
-        given(reviewRepository.getAverageRating(any())).willReturn(null);
+        given(reviewRepository.findAverageRatingsByLectureIds(any())).willReturn(Collections.emptyList());
+        given(enrollmentRepository.countsByLectureIds(any())).willReturn(Collections.emptyList());
+        given(lectureLikeRepository.countsByLectureIds(any())).willReturn(Collections.emptyList());
 
         Page<LectureListDto> result = lectureService.getLectures(0, 10, null, SortType.LATEST, null);
 
@@ -121,7 +128,9 @@ class LectureServiceTest {
     void getLectures_카테고리_필터링() {
         given(lectureRepository.findByCategory(eq("백엔드"), any(Pageable.class)))
                 .willReturn(new PageImpl<>(List.of(lecture)));
-        given(reviewRepository.getAverageRating(any())).willReturn(0.0);
+        given(reviewRepository.findAverageRatingsByLectureIds(any())).willReturn(Collections.emptyList());
+        given(enrollmentRepository.countsByLectureIds(any())).willReturn(Collections.emptyList());
+        given(lectureLikeRepository.countsByLectureIds(any())).willReturn(Collections.emptyList());
 
         Page<LectureListDto> result = lectureService.getLectures(0, 10, "백엔드", SortType.LATEST, null);
 

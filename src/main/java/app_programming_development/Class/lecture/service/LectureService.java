@@ -17,7 +17,6 @@ import app_programming_development.Class.enrollment.repository.EnrollmentReposit
 import app_programming_development.Class.enums.NotificationType;
 import app_programming_development.Class.enums.SortType;
 import app_programming_development.Class.enums.UserRole;
-import app_programming_development.Class.exceptions.forbidden.AdminRoleRequiredException;
 import app_programming_development.Class.exceptions.forbidden.NotLectureOwnerException;
 import app_programming_development.Class.exceptions.forbidden.TeacherRoleRequiredException;
 import app_programming_development.Class.exceptions.notFound.CertificateNotFoundException;
@@ -44,7 +43,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -131,12 +132,18 @@ public class LectureService {
                 lectures = lectureRepository.findAll(pageable);
             }
         }
-        return lectures.map(lecture -> {
-            Double avgRating = reviewRepository.getAverageRating(lecture.getId());
-            Long enrollCount = enrollmentRepository.countByLectures_Id(lecture.getId());
-            Long likeCount = lectureLikeRepository.countByLectures_Id(lecture.getId());
-            return LectureListDto.from(lecture, avgRating != null ? avgRating : 0.0, enrollCount, likeCount);
-        });
+
+        List<Long> lectureIds = lectures.getContent().stream().map(Lectures::getId).toList();
+        Map<Long, Double> ratingMap = buildRatingMap(lectureIds);
+        Map<Long, Long> enrollMap = buildEnrollMap(lectureIds);
+        Map<Long, Long> likeMap = buildLikeMap(lectureIds);
+
+        return lectures.map(lecture -> LectureListDto.from(
+                lecture,
+                ratingMap.getOrDefault(lecture.getId(), 0.0),
+                enrollMap.getOrDefault(lecture.getId(), 0L),
+                likeMap.getOrDefault(lecture.getId(), 0L)
+        ));
     }
 
     @Transactional
@@ -244,18 +251,21 @@ public class LectureService {
                 .orElseThrow(UserNotFoundException::new);
 
         List<Lectures> lectures = lectureRepository.findByInstructor_IdOrderByCreatedAtDesc(instructorId);
+        List<Long> lectureIds = lectures.stream().map(Lectures::getId).toList();
 
-        long totalStudents = lectures.stream()
-                .mapToLong(l -> enrollmentRepository.countByLectures_Id(l.getId()))
-                .sum();
+        Map<Long, Double> ratingMap = buildRatingMap(lectureIds);
+        Map<Long, Long> enrollMap = buildEnrollMap(lectureIds);
+        Map<Long, Long> likeMap = buildLikeMap(lectureIds);
+
+        long totalStudents = enrollMap.values().stream().mapToLong(Long::longValue).sum();
 
         List<LectureListDto> lectureDtos = lectures.stream()
-                .map(l -> {
-                    Double avgRating = reviewRepository.getAverageRating(l.getId());
-                    Long enrollCount = enrollmentRepository.countByLectures_Id(l.getId());
-                    Long likeCount = lectureLikeRepository.countByLectures_Id(l.getId());
-                    return LectureListDto.from(l, avgRating != null ? avgRating : 0.0, enrollCount, likeCount);
-                })
+                .map(l -> LectureListDto.from(
+                        l,
+                        ratingMap.getOrDefault(l.getId(), 0.0),
+                        enrollMap.getOrDefault(l.getId(), 0L),
+                        likeMap.getOrDefault(l.getId(), 0L)
+                ))
                 .collect(Collectors.toList());
 
         return new InstructorProfileResponse(
@@ -266,5 +276,38 @@ public class LectureService {
                 totalStudents,
                 lectureDtos
         );
+    }
+
+    // 강의 ID 목록으로 평균 평점 Map 조회 (lectureId → avgRating)
+    private Map<Long, Double> buildRatingMap(List<Long> lectureIds) {
+        if (lectureIds.isEmpty()) return Collections.emptyMap();
+        return reviewRepository.findAverageRatingsByLectureIds(lectureIds)
+                .stream()
+                .collect(Collectors.toMap(
+                        row -> (Long) row[0],
+                        row -> (Double) row[1]
+                ));
+    }
+
+    // 강의 ID 목록으로 수강신청 수 Map 조회 (lectureId → count)
+    private Map<Long, Long> buildEnrollMap(List<Long> lectureIds) {
+        if (lectureIds.isEmpty()) return Collections.emptyMap();
+        return enrollmentRepository.countsByLectureIds(lectureIds)
+                .stream()
+                .collect(Collectors.toMap(
+                        row -> (Long) row[0],
+                        row -> (Long) row[1]
+                ));
+    }
+
+    // 강의 ID 목록으로 찜 수 Map 조회 (lectureId → count)
+    private Map<Long, Long> buildLikeMap(List<Long> lectureIds) {
+        if (lectureIds.isEmpty()) return Collections.emptyMap();
+        return lectureLikeRepository.countsByLectureIds(lectureIds)
+                .stream()
+                .collect(Collectors.toMap(
+                        row -> (Long) row[0],
+                        row -> (Long) row[1]
+                ));
     }
 }

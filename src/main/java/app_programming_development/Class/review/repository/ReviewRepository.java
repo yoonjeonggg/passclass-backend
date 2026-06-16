@@ -12,6 +12,9 @@ public interface ReviewRepository extends JpaRepository<Reviews, Long> {
     @Query("SELECT AVG(r.rating) FROM Reviews r WHERE r.lectures.id = :lectureId")
     Double getAverageRating(@Param("lectureId") Long lectureId);
 
+    @Query("SELECT r.lectures.id, AVG(r.rating) FROM Reviews r WHERE r.lectures.id IN :lectureIds GROUP BY r.lectures.id")
+    List<Object[]> findAverageRatingsByLectureIds(@Param("lectureIds") List<Long> lectureIds);
+
     Long countByLectures_Id(Long lectureId);
     boolean existsByUser_IdAndLectures_Id(Long userId, Long lectureId);
     List<Reviews> findByLectures_IdOrderByCreatedAtDesc(Long lectureId);

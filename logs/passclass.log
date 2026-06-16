@@ -225,3 +225,68 @@ Caused by: com.fasterxml.jackson.core.JsonParseException: Unexpected character (
 2026-06-16 15:07:04.097 INFO  [Test worker] [traceId=] [userId=] a.Class.review.service.ReviewService - Review updated: reviewId=1, userId=1
 2026-06-16 15:07:04.128 INFO  [Test worker] [traceId=] [userId=] a.Class.user.service.UserService - Profile updated: userId=null
 2026-06-16 15:07:04.160 INFO  [Test worker] [traceId=] [userId=] a.Class.problem.service.WrongNoteService - WrongNote deleted: wrongNoteId=100, userId=1
+2026-06-16 15:49:18.190 INFO  [Test worker] [traceId=] [userId=] a.Class.PassClassApplicationTests - Starting PassClassApplicationTests using Java 21.0.3 with PID 41840 (started by User in D:\PassClass\PassClass_backend)
+2026-06-16 15:49:18.190 INFO  [Test worker] [traceId=] [userId=] a.Class.PassClassApplicationTests - No active profile set, falling back to 1 default profile: "default"
+2026-06-16 15:49:30.004 WARN  [Test worker] [traceId=] [userId=] o.s.b.a.o.j.JpaBaseConfiguration$JpaWebConfiguration - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-06-16 15:49:31.649 INFO  [Test worker] [traceId=] [userId=] a.Class.PassClassApplicationTests - Started PassClassApplicationTests in 13.839 seconds (process running for 15.129)
+2026-06-16 15:49:32.123 INFO  [Test worker] [traceId=] [userId=] a.Class.certificate.service.CertificateService - [ADMIN] Certificate updated: certificateId=1, adminId=null
+2026-06-16 15:49:32.123 INFO  [Test worker] [traceId=] [userId=] a.Class.certificate.service.CertificateService - [ADMIN] Certificate created: certificateId=null, name=정보처리기사, adminId=null
+2026-06-16 15:49:32.139 INFO  [Test worker] [traceId=] [userId=] a.Class.certificate.service.CertificateService - [ADMIN] Certificate deleted: certificateId=1, adminId=null
+2026-06-16 15:49:32.345 INFO  [Test worker] [traceId=] [userId=] a.Class.chapter.service.LectureChapterService - Chapter deleted: chapterId=1, instructorId=null
+2026-06-16 15:49:32.345 INFO  [Test worker] [traceId=] [userId=] a.Class.chapter.service.LectureChapterService - Chapter updated: chapterId=1, instructorId=null
+2026-06-16 15:49:32.377 INFO  [Test worker] [traceId=] [userId=] a.Class.chapter.service.LectureChapterService - Chapter created: chapterId=null, lectureId=1, instructorId=null, notified=1 students
+2026-06-16 15:49:32.741 INFO  [Test worker] [traceId=] [userId=] a.Class.lecture.service.LectureService - Lecture created: lectureId=null, instructorId=null, title=스프링 강의
+2026-06-16 15:49:32.757 INFO  [Test worker] [traceId=] [userId=] a.Class.like.service.LikeService - Lecture liked: userId=null, lectureId=1
+2026-06-16 15:49:32.757 INFO  [Test worker] [traceId=] [userId=] a.Class.like.service.LikeService - Lecture unliked: userId=null, lectureId=1
+2026-06-16 15:49:32.978 INFO  [Test worker] [traceId=] [userId=] a.Class.mockexam.service.MockExamService - MockExam submitted: examId=100, userId=3, score=100
+2026-06-16 15:49:33.000 INFO  [Test worker] [traceId=] [userId=] a.Class.mockexam.service.MockExamService - MockExam submitted: examId=100, userId=3, score=0
+2026-06-16 15:49:33.041 INFO  [Test worker] [traceId=] [userId=] a.Class.mockexam.service.MockExamService - MockExam created: examId=null, creatorId=2
+2026-06-16 15:49:33.057 INFO  [Test worker] [traceId=] [userId=] a.Class.mockexam.service.MockExamService - MockExam deleted: examId=100, deletedBy=1
+2026-06-16 15:49:33.057 INFO  [Test worker] [traceId=] [userId=] a.Class.mockexam.service.MockExamService - MockExam created: examId=100, creatorId=1
+2026-06-16 15:49:33.057 INFO  [Test worker] [traceId=] [userId=] a.Class.mockexam.service.MockExamService - MockExam submitted: examId=100, userId=3, score=0
+2026-06-16 15:49:33.073 INFO  [Test worker] [traceId=] [userId=] a.Class.mockexam.service.MockExamService - MockExam submitted: examId=100, userId=3, score=100
+2026-06-16 15:49:33.089 INFO  [Test worker] [traceId=] [userId=] a.Class.mockexam.service.MockExamService - MockExam submitted: examId=100, userId=3, score=67
+2026-06-16 15:49:33.105 INFO  [Test worker] [traceId=] [userId=] a.Class.mockexam.service.MockExamService - MockExam question added: examId=100, problemId=1
+2026-06-16 15:49:33.326 INFO  [Test worker] [traceId=] [userId=] a.Class.problem.service.ProblemService - Problem deleted: problemId=10, deletedBy=1
+2026-06-16 15:49:33.326 INFO  [Test worker] [traceId=] [userId=] a.Class.problem.service.ProblemService - Problem updated: problemId=10, updatedBy=1
+2026-06-16 15:49:33.342 INFO  [Test worker] [traceId=] [userId=] a.Class.problem.service.ProblemService - Problem solved: problemId=10, userId=3, correct=false
+2026-06-16 15:49:33.342 INFO  [Test worker] [traceId=] [userId=] a.Class.problem.service.ProblemService - Problem solved: problemId=10, userId=3, correct=false
+2026-06-16 15:49:33.358 INFO  [Test worker] [traceId=] [userId=] a.Class.problem.service.ProblemService - Problem created: problemId=10, creatorId=1
+2026-06-16 15:49:33.358 INFO  [Test worker] [traceId=] [userId=] a.Class.problem.service.ProblemService - Problem solved: problemId=10, userId=3, correct=true
+2026-06-16 15:49:33.376 INFO  [Test worker] [traceId=] [userId=] a.Class.problem.service.ProblemService - Problem created: problemId=10, creatorId=2
+2026-06-16 15:49:33.400 INFO  [Test worker] [traceId=] [userId=] a.Class.review.service.ReviewService - Review created: userId=1, lectureId=null, rating=null
+2026-06-16 15:49:33.406 INFO  [Test worker] [traceId=] [userId=] a.Class.review.service.ReviewService - Review updated: reviewId=1, userId=1
+2026-06-16 15:49:33.422 INFO  [Test worker] [traceId=] [userId=] a.Class.user.service.UserService - Profile updated: userId=null
+2026-06-16 15:49:33.453 INFO  [Test worker] [traceId=] [userId=] a.Class.problem.service.WrongNoteService - WrongNote deleted: wrongNoteId=100, userId=1
+2026-06-16 16:48:02.143 INFO  [Test worker] [traceId=] [userId=] a.Class.PassClassApplicationTests - Starting PassClassApplicationTests using Java 21.0.3 with PID 49056 (started by User in D:\PassClass\PassClass_backend)
+2026-06-16 16:48:02.148 INFO  [Test worker] [traceId=] [userId=] a.Class.PassClassApplicationTests - No active profile set, falling back to 1 default profile: "default"
+2026-06-16 16:48:10.855 WARN  [Test worker] [traceId=] [userId=] o.s.b.a.o.j.JpaBaseConfiguration$JpaWebConfiguration - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-06-16 16:48:12.218 INFO  [Test worker] [traceId=] [userId=] a.Class.PassClassApplicationTests - Started PassClassApplicationTests in 10.539 seconds (process running for 14.222)
+2026-06-16 16:48:12.392 INFO  [Test worker] [traceId=] [userId=] a.Class.certificate.service.CertificateService - [ADMIN] Certificate updated: certificateId=1, adminId=null
+2026-06-16 16:48:12.392 INFO  [Test worker] [traceId=] [userId=] a.Class.certificate.service.CertificateService - [ADMIN] Certificate created: certificateId=null, name=정보처리기사, adminId=null
+2026-06-16 16:48:12.392 INFO  [Test worker] [traceId=] [userId=] a.Class.certificate.service.CertificateService - [ADMIN] Certificate deleted: certificateId=1, adminId=null
+2026-06-16 16:48:12.408 INFO  [Test worker] [traceId=] [userId=] a.Class.chapter.service.LectureChapterService - Chapter deleted: chapterId=1, instructorId=null
+2026-06-16 16:48:12.424 INFO  [Test worker] [traceId=] [userId=] a.Class.chapter.service.LectureChapterService - Chapter updated: chapterId=1, instructorId=null
+2026-06-16 16:48:12.440 INFO  [Test worker] [traceId=] [userId=] a.Class.chapter.service.LectureChapterService - Chapter created: chapterId=null, lectureId=1, instructorId=null, notified=1 students
+2026-06-16 16:48:12.440 INFO  [Test worker] [traceId=] [userId=] a.Class.like.service.LikeService - Lecture liked: userId=null, lectureId=1
+2026-06-16 16:48:12.440 INFO  [Test worker] [traceId=] [userId=] a.Class.like.service.LikeService - Lecture unliked: userId=null, lectureId=1
+2026-06-16 16:48:12.677 INFO  [Test worker] [traceId=] [userId=] a.Class.mockexam.service.MockExamService - MockExam submitted: examId=100, userId=3, score=100
+2026-06-16 16:48:12.708 INFO  [Test worker] [traceId=] [userId=] a.Class.mockexam.service.MockExamService - MockExam submitted: examId=100, userId=3, score=0
+2026-06-16 16:48:12.740 INFO  [Test worker] [traceId=] [userId=] a.Class.mockexam.service.MockExamService - MockExam created: examId=null, creatorId=2
+2026-06-16 16:48:12.756 INFO  [Test worker] [traceId=] [userId=] a.Class.mockexam.service.MockExamService - MockExam deleted: examId=100, deletedBy=1
+2026-06-16 16:48:12.774 INFO  [Test worker] [traceId=] [userId=] a.Class.mockexam.service.MockExamService - MockExam created: examId=100, creatorId=1
+2026-06-16 16:48:12.774 INFO  [Test worker] [traceId=] [userId=] a.Class.mockexam.service.MockExamService - MockExam submitted: examId=100, userId=3, score=0
+2026-06-16 16:48:12.787 INFO  [Test worker] [traceId=] [userId=] a.Class.mockexam.service.MockExamService - MockExam submitted: examId=100, userId=3, score=100
+2026-06-16 16:48:12.787 INFO  [Test worker] [traceId=] [userId=] a.Class.mockexam.service.MockExamService - MockExam submitted: examId=100, userId=3, score=67
+2026-06-16 16:48:12.803 INFO  [Test worker] [traceId=] [userId=] a.Class.mockexam.service.MockExamService - MockExam question added: examId=100, problemId=1
+2026-06-16 16:48:12.993 INFO  [Test worker] [traceId=] [userId=] a.Class.problem.service.ProblemService - Problem deleted: problemId=10, deletedBy=1
+2026-06-16 16:48:12.993 INFO  [Test worker] [traceId=] [userId=] a.Class.problem.service.ProblemService - Problem updated: problemId=10, updatedBy=1
+2026-06-16 16:48:12.993 INFO  [Test worker] [traceId=] [userId=] a.Class.problem.service.ProblemService - Problem solved: problemId=10, userId=3, correct=false
+2026-06-16 16:48:13.009 INFO  [Test worker] [traceId=] [userId=] a.Class.problem.service.ProblemService - Problem solved: problemId=10, userId=3, correct=false
+2026-06-16 16:48:13.009 INFO  [Test worker] [traceId=] [userId=] a.Class.problem.service.ProblemService - Problem created: problemId=10, creatorId=1
+2026-06-16 16:48:13.024 INFO  [Test worker] [traceId=] [userId=] a.Class.problem.service.ProblemService - Problem solved: problemId=10, userId=3, correct=true
+2026-06-16 16:48:13.024 INFO  [Test worker] [traceId=] [userId=] a.Class.problem.service.ProblemService - Problem created: problemId=10, creatorId=2
+2026-06-16 16:48:13.056 INFO  [Test worker] [traceId=] [userId=] a.Class.review.service.ReviewService - Review created: userId=1, lectureId=null, rating=null
+2026-06-16 16:48:13.074 INFO  [Test worker] [traceId=] [userId=] a.Class.review.service.ReviewService - Review updated: reviewId=1, userId=1
+2026-06-16 16:48:13.088 INFO  [Test worker] [traceId=] [userId=] a.Class.user.service.UserService - Profile updated: userId=null
+2026-06-16 16:48:13.105 INFO  [Test worker] [traceId=] [userId=] a.Class.problem.service.WrongNoteService - WrongNote deleted: wrongNoteId=100, userId=1
