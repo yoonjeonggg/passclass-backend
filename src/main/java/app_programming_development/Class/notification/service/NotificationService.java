@@ -15,8 +15,12 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+import java.io.IOException;
+import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
 @Service
@@ -25,6 +29,10 @@ public class NotificationService {
 
     private final NotificationRepository notificationRepository;
     private final SecurityUtils securityUtils;
+
+    private final Map<Long, SseEmitter> emitters = new ConcurrentHashMap<>();
+
+    private static final long SSE_TIMEOUT = 1800000L; // 30분
 
     @Transactional(readOnly = true)
     public Page<NotificationResponse> getNotifications(int page, int size) {
@@ -71,5 +79,37 @@ public class NotificationService {
                 .build();
         notificationRepository.save(notification);
         log.debug("Notification sent: recipientId={}, type={}", recipient.getId(), type);
+
+        SseEmitter emitter = emitters.get(recipient.getId());
+        if (emitter != null) {
+            try {
+                emitter.send(SseEmitter.event()
+                        .name("notification")
+                        .data(NotificationResponse.from(notification)));
+            } catch (IOException e) {
+                emitters.remove(recipient.getId());
+            }
+        }
+    }
+
+    public SseEmitter subscribe() {
+        Users currentUser = securityUtils.getCurrentUser();
+        Long userId = currentUser.getId();
+
+        SseEmitter emitter = new SseEmitter(SSE_TIMEOUT);
+        emitters.put(userId, emitter);
+
+        emitter.onCompletion(() -> emitters.remove(userId));
+        emitter.onTimeout(() -> emitters.remove(userId));
+        emitter.onError(e -> emitters.remove(userId));
+
+        try {
+            emitter.send(SseEmitter.event().name("connect").data("connected"));
+        } catch (IOException e) {
+            emitters.remove(userId);
+        }
+
+        log.debug("SSE subscribed: userId={}", userId);
+        return emitter;
     }
 }
