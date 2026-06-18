@@ -53,7 +53,7 @@ public class PaymentService {
     @Value("${nicepay.secret-key}")
     private String secretKey;
 
-    @Value("${nicepay.api-url}")
+    @Value("${nicepay.api-url:https://sandbox-api.nicepay.co.kr}")
     private String apiUrl;
 
     @Transactional

@@ -6,7 +6,7 @@ on:
 
 jobs:
   build-and-deploy:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
@@ -20,7 +20,6 @@ jobs:
         with:
           java-version: '21'
           distribution: 'corretto'
-
 
       - name: Clean leftover Firebase config
         run: rm -f src/main/resources/firebase/passclass-494fe-firebase-adminsdk-fbsvc-511a589c3b.json
@@ -45,19 +44,26 @@ jobs:
           push: true
           tags: ghcr.io/${{ github.repository_owner }}/passclass:latest
 
-      - name: Deploy Docker container
-        run: |
-          docker stop passclass || true
-          docker rm passclass || true
-
-          docker run -d \
-            --name passclass \
-            --restart unless-stopped \
-            --network host \
-            -e SPRING_PROFILES_ACTIVE=prod \
-            -e "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" \
-            -e "JWT_SECRET=${{ secrets.JWT_SECRET }}" \
-            -v /home/ec2-user/passclass/firebase.json:/firebase/passclass-494fe-firebase-adminsdk-fbsvc-511a589c3b.json:ro \
-            ghcr.io/${{ github.repository_owner }}/passclass:latest
-
-          echo "Deployed successfully"
+      - name: Deploy to EC2 via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ec2-user
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+            docker pull ghcr.io/${{ github.repository_owner }}/passclass:latest
+            docker stop passclass || true
+            docker rm passclass || true
+            docker run -d \
+              --name passclass \
+              --restart unless-stopped \
+              --network host \
+              -e SPRING_PROFILES_ACTIVE=prod \
+              -e "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" \
+              -e "JWT_SECRET=${{ secrets.JWT_SECRET }}" \
+              -e "NICEPAY_CLIENT_KEY=${{ secrets.NICEPAY_CLIENT_KEY }}" \
+              -e "NICEPAY_SECRET_KEY=${{ secrets.NICEPAY_SECRET_KEY }}" \
+              -v /home/ec2-user/passclass/firebase.json:/firebase/passclass-494fe-firebase-adminsdk-fbsvc-511a589c3b.json:ro \
+              ghcr.io/${{ github.repository_owner }}/passclass:latest
+            echo "Deployed successfully"
