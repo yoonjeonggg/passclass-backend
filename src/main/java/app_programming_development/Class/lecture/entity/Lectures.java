@@ -52,6 +52,9 @@ public class Lectures {
     @Column(name="thumbnail_url")
     private String thumbnailUrl;
 
+    @Column(name="price", nullable = false, columnDefinition = "int default 0")
+    private int price;
+
     @CreatedDate
     @Column(name="created_at", nullable = false)
     private LocalDateTime createdAt;
