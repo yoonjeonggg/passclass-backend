@@ -92,13 +92,6 @@ public class AuthService {
             throw new UserAlreadyExistsException();
         }
 
-        EmailVerification verification = emailVerificationRepository
-                .findTopByEmailOrderByCreatedAtDesc(request.getEmail())
-                .orElseThrow(InvalidVerificationCodeException::new);
-        if (!verification.isVerified()) {
-            throw new InvalidVerificationCodeException();
-        }
-
         Users user = Users.builder()
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
