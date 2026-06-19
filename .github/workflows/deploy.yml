@@ -62,8 +62,8 @@ jobs:
               -e SPRING_PROFILES_ACTIVE=prod \
               -e "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" \
               -e "JWT_SECRET=${{ secrets.JWT_SECRET }}" \
-              -e "NICEPAY_CLIENT_KEY=${{ secrets.NICEPAY_CLIENT_KEY }}" \
-              -e "NICEPAY_SECRET_KEY=${{ secrets.NICEPAY_SECRET_KEY }}" \
+              -e "NICEPAY_CLIENT_KEY=test_client_key" \
+              -e "NICEPAY_SECRET_KEY=test_secret_key" \
               -v /home/ec2-user/passclass/firebase.json:/firebase/passclass-494fe-firebase-adminsdk-fbsvc-511a589c3b.json:ro \
               ghcr.io/${{ github.repository_owner }}/passclass:latest
             echo "Deployed successfully"
